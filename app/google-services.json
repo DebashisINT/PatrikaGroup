@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "940620912034",
+    "project_id": "patrika-group",
+    "storage_bucket": "patrika-group.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:940620912034:android:3a6e3fa5cdfe89a21a4efb",
+        "android_client_info": {
+          "package_name": "com.patrikagroup"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "940620912034-jkf8d9st4mo7qvbc2hh6q09kb8p5i93f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJS7mhhK0pmBeqBiHZpka_g_DYbXivEZY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "940620912034-jkf8d9st4mo7qvbc2hh6q09kb8p5i93f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
