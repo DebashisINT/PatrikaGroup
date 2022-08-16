@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -20,7 +21,6 @@ import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.borax12.materialdaterangepicker.date.DatePickerDialog
 import com.patrikagroup.R
-import com.patrikagroup.app.AppDatabase
 import com.patrikagroup.app.NetworkConstant
 import com.patrikagroup.app.Pref
 import com.patrikagroup.app.domain.BeatEntity
@@ -30,13 +30,10 @@ import com.patrikagroup.app.utils.Toaster
 import com.patrikagroup.app.widgets.MovableFloatingActionButton
 import com.patrikagroup.base.presentation.BaseActivity
 import com.patrikagroup.base.presentation.BaseFragment
-import com.patrikagroup.features.NewQuotation.model.ViewDetailsQuotResponse
 import com.patrikagroup.features.addshop.api.typeList.TypeListRepoProvider
 import com.patrikagroup.features.addshop.model.BeatListResponseModel
 import com.patrikagroup.features.addshop.presentation.BeatListDialog
 import com.patrikagroup.features.alarm.api.visit_report_api.VisitReportRepoProvider
-import com.patrikagroup.features.alarm.model.VisitReportDataModel
-import com.patrikagroup.features.alarm.model.VisitReportResponseModel
 import com.patrikagroup.features.dashboard.presentation.DashboardActivity
 import com.patrikagroup.features.login.presentation.LoginActivity
 import com.patrikagroup.features.member.model.TeamListDataModel
@@ -45,7 +42,6 @@ import com.itextpdf.text.*
 import com.itextpdf.text.pdf.PdfPCell
 import com.itextpdf.text.pdf.PdfPTable
 import com.itextpdf.text.pdf.PdfWriter
-import com.itextpdf.text.pdf.draw.VerticalPositionMark
 import com.pnikosis.materialishprogress.ProgressWheel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -56,7 +52,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class TeamBeatListFragment : BaseFragment(), DatePickerDialog.OnDateSetListener,
@@ -230,8 +225,10 @@ class TeamBeatListFragment : BaseFragment(), DatePickerDialog.OnDateSetListener,
             document.open()
 
             var font: Font = Font(Font.FontFamily.HELVETICA, 10f, Font.BOLD)
+            var fontBlueColor: Font = Font(Font.FontFamily.HELVETICA, 10f, Font.BOLD,BaseColor.BLACK)
             var fontB1: Font = Font(Font.FontFamily.HELVETICA, 9f, Font.BOLD)
             var font1: Font = Font(Font.FontFamily.HELVETICA, 8f, Font.NORMAL)
+            var font1Gray: Font = Font(Font.FontFamily.HELVETICA, 8f, Font.NORMAL,BaseColor.DARK_GRAY)
             var font1Big: Font = Font(Font.FontFamily.HELVETICA, 10f, Font.NORMAL)
             val grayFront = Font(Font.FontFamily.HELVETICA, 10f, Font.NORMAL, BaseColor.GRAY)
             var fontBoldU: Font = Font(Font.FontFamily.HELVETICA, 12f, Font.UNDERLINE or Font.BOLD)
@@ -261,42 +258,98 @@ class TeamBeatListFragment : BaseFragment(), DatePickerDialog.OnDateSetListener,
             pdfHead.spacingAfter = 5f
             document.add(pdfHead)
 
-            val salesman = Paragraph("Salesman Name : "+mobj!!.user_name , font)
+            val salesman = Paragraph("Name : "+mobj!!.user_name , font)
             salesman.alignment = Element.ALIGN_LEFT
             salesman.spacingAfter = 5f
             document.add(salesman)
 
+            val widths = floatArrayOf(0.20f, 0.20f,0.20f,0.20f,0.20f)
 
             for(l in 0..shareBeatModel.size-1){
-                val dateBeatHead = Paragraph("Beat Name: ${shareBeatModel.get(l).beatName!!}" + "       DATE: " + AppUtils.getFormatedDateNew(shareBeatModel.get(l).date!!,"yyyy-mm-dd","dd-mm-yyyy") , font)
+                val dateBeatHead = Paragraph("${Pref.beatText} : ${shareBeatModel.get(l).beatName!!}" + "       Date: " + AppUtils.getFormatedDateNew(shareBeatModel.get(l).date!!,"yyyy-mm-dd","dd-mm-yyyy") , fontBlueColor)
                 dateBeatHead.alignment = Element.ALIGN_LEFT
                 dateBeatHead.spacingAfter = 5f
                 document.add(dateBeatHead)
 
-                val subHead = Paragraph("${Pref.shopText} Name     Status     Visit/Revisit Time", fontB1)
+                /*val subHead = Paragraph("${Pref.shopText}           Status     Visit/Revisit", fontB1)
                 subHead.alignment = Element.ALIGN_LEFT
                 subHead.spacingAfter = 2f
-                document.add(subHead)
+                document.add(subHead)*/
+
+
+                var tableHeader: PdfPTable = PdfPTable(widths)
+                tableHeader.getDefaultCell().setHorizontalAlignment(Element.ALIGN_LEFT)
+                tableHeader.setWidthPercentage(100f)
+
+                val cell1 = PdfPCell(Phrase("${Pref.shopText}",fontB1))
+                cell1.setHorizontalAlignment(Element.ALIGN_LEFT);
+                cell1.setBorder(Rectangle.NO_BORDER)
+                tableHeader.addCell(cell1);
+
+                val cell2 = PdfPCell(Phrase("Status",fontB1))
+                cell2.setHorizontalAlignment(Element.ALIGN_LEFT);
+                cell2.setBorder(Rectangle.NO_BORDER)
+                tableHeader.addCell(cell2);
+
+                val cell2_1 = PdfPCell(Phrase("Visit/Revisit",fontB1))
+                cell2_1.setHorizontalAlignment(Element.ALIGN_LEFT);
+                cell2_1.setBorder(Rectangle.NO_BORDER)
+                tableHeader.addCell(cell2_1);
+
+                val cell2_2 = PdfPCell(Phrase("",fontB1))
+                cell2_2.setHorizontalAlignment(Element.ALIGN_LEFT);
+                cell2_2.setBorder(Rectangle.NO_BORDER)
+                tableHeader.addCell(cell2_2);
+
+                val cell2_3 = PdfPCell(Phrase("",fontB1))
+                cell2_3.setHorizontalAlignment(Element.ALIGN_LEFT);
+                cell2_3.setBorder(Rectangle.NO_BORDER)
+                tableHeader.addCell(cell2_3);
+
+                document.add(tableHeader)
 
                 for(k in 0..shareBeatModel.get(l).beatList.size-1){
-                    var shopName = shareBeatModel.get(l).beatList.get(k).cusName
+
+                    val tableRows = PdfPTable(widths)
+                    tableRows.defaultCell.horizontalAlignment = Element.ALIGN_CENTER
+                    tableRows.setWidthPercentage(100f);
+
+                    var cellBodyS1 = PdfPCell(Phrase(shareBeatModel.get(l).beatList.get(k).cusName,font1Gray))
+                    cellBodyS1.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    cellBodyS1.setBorder(Rectangle.NO_BORDER)
+                    tableRows.addCell(cellBodyS1)
+
+                    var cellBodyS2 = PdfPCell(Phrase(shareBeatModel.get(l).beatList.get(k).status,font1Gray))
+                    cellBodyS2.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    cellBodyS2.setBorder(Rectangle.NO_BORDER)
+                    tableRows.addCell(cellBodyS2)
+
+                    var cellBodyS3 = PdfPCell(Phrase(shareBeatModel.get(l).beatList.get(k).vTime,font1Gray))
+                    cellBodyS3.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    cellBodyS3.setBorder(Rectangle.NO_BORDER)
+                    tableRows.addCell(cellBodyS3)
+
+                    var cellBodyS4 = PdfPCell(Phrase("",font1Gray))
+                    cellBodyS4.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    cellBodyS4.setBorder(Rectangle.NO_BORDER)
+                    tableRows.addCell(cellBodyS4)
+
+                    var cellBodyS5 = PdfPCell(Phrase("",font1Gray))
+                    cellBodyS5.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    cellBodyS5.setBorder(Rectangle.NO_BORDER)
+                    tableRows.addCell(cellBodyS5)
+
+                    document.add(tableRows)
+                    document.add(Paragraph())
+
+                    /*var shopName = shareBeatModel.get(l).beatList.get(k).cusName
                     var status = shareBeatModel.get(l).beatList.get(k).status
                     var vt = shareBeatModel.get(l).beatList.get(k).vTime
 
                     val shopNames = Paragraph("$shopName          $status           $vt", font1)
                     shopNames.alignment = Element.ALIGN_LEFT
                     shopNames.spacingAfter = 2f
-                    document.add(shopNames)
-
-                    /*val shopstatus = Paragraph(" $status", font1)
-                    shopstatus.alignment = Element.ALIGN_LEFT
-                    shopstatus.spacingAfter = 2f
-                    document.add(shopstatus)
-
-                    val shopvt = Paragraph("$vt", font1)
-                    shopvt.alignment = Element.ALIGN_LEFT
-                    shopvt.spacingAfter = 2f
-                    document.add(shopvt)*/
+                    document.add(shopNames)*/
                 }
             }
 
@@ -531,6 +584,14 @@ class TeamBeatListFragment : BaseFragment(), DatePickerDialog.OnDateSetListener,
                 tv_no_data.visibility = View.GONE
 
             if(finalList.size>0){
+                finalList = finalList.reversed() as ArrayList<BeatViewModel>
+
+                for(i in 0..finalList.size-1){
+                    for(j in 0..finalList.get(i).beatList.size-1){
+                        finalList.get(i).beatList = finalList.get(i).beatList.reversed() as ArrayList<BeatViewListModel>
+                    }
+                }
+
                 shareBeatModel=finalList
                 beatTeamListAdapter = BeatTeamListAdapter(mContext,finalList)
                 rv_list.adapter=beatTeamListAdapter

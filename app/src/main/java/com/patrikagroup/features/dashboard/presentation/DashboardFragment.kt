@@ -834,7 +834,9 @@ class DashboardFragment : BaseFragment(), View.OnClickListener, HBRecorderListen
             (mContext as DashboardActivity).showLanguageAlert(false)
         }
 
-        best_performing_shop_TV.text = getString(R.string.todays_task)
+//        best_performing_shop_TV.text = getString(R.string.todays_task)
+
+        best_performing_shop_TV.text = "${Pref.TodaysTaskText}"
 
         tv_pick_date_range.text = AppUtils.getFormattedDate(myCalendar.time)
 
@@ -1664,7 +1666,7 @@ class DashboardFragment : BaseFragment(), View.OnClickListener, HBRecorderListen
 
                         var beatName = AppDatabase.getDBInstance()?.beatDao()?.getSingleItem(shopListWithBeat.get(l).beat_id)!!.name
 
-                        obj.customer_name=beatName+"\n"+shopListWithBeat.get(l).shopName
+                        obj.customer_name="${Pref.beatText}"+" : "+beatName+"\n"+"${Pref.shopText}"+" : "+shopListWithBeat.get(l).shopName
                         obj.customer_id=shopListWithBeat.get(l).shop_id
                         obj.location=""
                         obj.date=AppUtils.getCurrentDateForShopActi()
@@ -3796,8 +3798,14 @@ class DashboardFragment : BaseFragment(), View.OnClickListener, HBRecorderListen
                                 if (configResponse.IsBeatRouteAvailableinAttendance != null)
                                     Pref.IsBeatRouteAvailableinAttendance = configResponse.IsBeatRouteAvailableinAttendance!!
 
-                                if (configResponse.IsAllBeatAvailableforParty != null)
-                                    Pref.IsAllBeatAvailableforParty = configResponse.IsAllBeatAvailableforParty!!
+                                if (configResponse.IsAllBeatAvailable != null)
+                                    Pref.IsAllBeatAvailableforParty = configResponse.IsAllBeatAvailable!!
+
+                                if (configResponse.BeatText != null)
+                                    Pref.beatText=configResponse.BeatText!!
+
+                                if (configResponse.TodaysTaskText != null)
+                                    Pref.TodaysTaskText=configResponse.TodaysTaskText!!
 
                             }
                             BaseActivity.isApiInitiated = false
@@ -4728,7 +4736,8 @@ class DashboardFragment : BaseFragment(), View.OnClickListener, HBRecorderListen
         avgShop.text = todaysShopVisitCount
         avgTime.text = InfoWizard.getAverageShopVisitTimeDuration() + " Hrs"
 
-        best_performing_shop_TV.text = getString(R.string.todays_task)
+        //best_performing_shop_TV.text = getString(R.string.todays_task)
+        best_performing_shop_TV.text = "${Pref.TodaysTaskText}"
 
         tv_pick_date_range.text = AppUtils.getFormattedDate(myCalendar.time)
 

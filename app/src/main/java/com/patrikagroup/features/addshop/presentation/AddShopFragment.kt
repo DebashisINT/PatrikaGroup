@@ -718,7 +718,7 @@ class AddShopFragment : BaseFragment(), View.OnClickListener {
         ll_feedback =  view.findViewById(R.id.ll_feedback)
 
 
-
+        tv_select_beat.hint = "Select " + "${Pref.beatText}"
 
 
         assign_to_shop_tv.hint = getString(R.string.assign_to_hint_text) + " ${Pref.shopText}"

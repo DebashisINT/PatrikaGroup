@@ -520,8 +520,14 @@ class LoginActivity : BaseActivity(), View.OnClickListener, LocationListener {
                                 if (configResponse.IsBeatRouteAvailableinAttendance != null)
                                     Pref.IsBeatRouteAvailableinAttendance = configResponse.IsBeatRouteAvailableinAttendance!!
 
-                                if (configResponse.IsAllBeatAvailableforParty != null)
-                                    Pref.IsAllBeatAvailableforParty = configResponse.IsAllBeatAvailableforParty!!
+                                if (configResponse.IsAllBeatAvailable != null)
+                                    Pref.IsAllBeatAvailableforParty = configResponse.IsAllBeatAvailable!!
+
+                                if (configResponse.BeatText != null)
+                                    Pref.beatText=configResponse.BeatText!!
+
+                                if (configResponse.TodaysTaskText != null)
+                                    Pref.TodaysTaskText=configResponse.TodaysTaskText!!
 
 
                                 /*if (configResponse.willShowUpdateDayPlan != null)
@@ -6751,7 +6757,9 @@ class LoginActivity : BaseActivity(), View.OnClickListener, LocationListener {
         val intent = Intent(context, NewAlarmReceiver::class.java)
         intent.putExtra("request_code", requestCode)
         intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
-        val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        //val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        // FLAG_IMMUTABLE update
+        val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE)
 
         val calendar = Calendar.getInstance(Locale.ENGLISH)
 

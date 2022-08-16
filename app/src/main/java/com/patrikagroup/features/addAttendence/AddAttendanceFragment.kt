@@ -284,6 +284,8 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
         cv_beat = view.findViewById(R.id.cv_beat_type_root)
         tv_beat_type= view.findViewById(R.id.tv_beat_type)
 
+        tv_beat_type.hint = "Select " + "${Pref.beatText}" + " Type"
+
         if(Pref.IsBeatRouteAvailableinAttendance)
         {
             cv_beat.visibility=View.VISIBLE
@@ -381,7 +383,7 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
        // faceDetectorSetUp()
     }
 
-    override fun onMapReady(googleMap: GoogleMap?) {
+  /*  override fun onMapReady(googleMap: GoogleMap?) {
         mGoogleMap = googleMap
         mGoogleMap?.uiSettings?.isZoomControlsEnabled = true
 
@@ -394,15 +396,15 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
 
             markerOptions.also {
                 it.position(latLng)
-                /*it.title(locationName)
-                it.snippet(locationName)*/
+                *//*it.title(locationName)
+                it.snippet(locationName)*//*
                 it.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                 mGoogleMap?.addMarker(it)!!
             }
 
             tv_address.text = LocationWizard.getLocationName(mContext, Pref.current_latitude.toDouble(), Pref.current_longitude.toDouble())
         }
-    }
+    }*/
 
 
     private var selectedRoute = ArrayList<RouteEntity>()
@@ -1767,7 +1769,7 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
             if (TextUtils.isEmpty(workTypeId))
                 (mContext as DashboardActivity).showSnackMessage("Please select work type")
             else if(TextUtils.isEmpty(mbeatId) && Pref.IsBeatRouteAvailableinAttendance)
-                openDialogPopup("Hi! (${Pref.user_name})","Please select beat type")
+                openDialogPopup("Hi! (${Pref.user_name})","Please select ${Pref.beatText} type")
             else {
                 if (tv_work_type.text.contains("Field")) {
                     val list_ = AppDatabase.getDBInstance()?.routeDao()?.getAll()
@@ -3393,6 +3395,30 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
             simpleDialog.cancel()
         })
         simpleDialog.show()
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        mGoogleMap = googleMap
+        mGoogleMap?.uiSettings?.isZoomControlsEnabled = true
+
+        if (!TextUtils.isEmpty(Pref.current_latitude) && !TextUtils.isEmpty(Pref.current_longitude)) {
+            mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(Pref.current_latitude.toDouble(),
+                Pref.current_longitude.toDouble()), 15f))
+
+            val latLng = LatLng(Pref.current_latitude.toDouble(), Pref.current_longitude.toDouble())
+            val markerOptions = MarkerOptions()
+
+            markerOptions.also {
+                it.position(latLng)
+                /*it.title(locationName)
+                it.snippet(locationName)*/
+                it.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                mGoogleMap?.addMarker(it)!!
+            }
+
+            tv_address.text = LocationWizard.getLocationName(mContext, Pref.current_latitude.toDouble(), Pref.current_longitude.toDouble())
+        }
+
     }
 
 }

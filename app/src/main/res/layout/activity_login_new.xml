@@ -48,11 +48,12 @@
                     android:id="@+id/logo_new"
                     android:layout_width="@dimen/_145sdp"
                     android:layout_height="@dimen/_68sdp"
-                    android:layout_centerHorizontal="true"
-                    android:layout_gravity="center"
+                    android:src="@drawable/breezelogo"
                     android:layout_marginTop="@dimen/_30sdp"
+                    android:layout_centerHorizontal="true"
                     android:gravity="center|center_horizontal"
-                    android:src="@drawable/breezelogo" />
+                    android:layout_gravity="center"
+                  />
 
                 <com.patrikagroup.widgets.AppCustomTextView
                     android:id="@+id/Logo_name_TV"
@@ -65,8 +66,8 @@
                     android:gravity="center|center_horizontal"
                     android:text="@string/name_filed_managenent_system"
                     android:textColor="#287fb2"
-                    android:textSize="@dimen/_12sdp"
                     android:visibility="gone"
+                    android:textSize="@dimen/_12sdp"
                     android:textStyle="bold" />
 
                 <com.patrikagroup.widgets.AppCustomTextView

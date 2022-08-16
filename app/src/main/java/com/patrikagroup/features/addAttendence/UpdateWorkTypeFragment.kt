@@ -104,6 +104,8 @@ class UpdateWorkTypeFragment : Fragment(), View.OnClickListener {
         cv_beat = view.findViewById(R.id.cv_beat_type_root)
         tv_beat_type= view.findViewById(R.id.tv_beat_type)
 
+        tv_beat_type.hint = "Select " + "${Pref.beatText}" + " Type"
+
         try {
             var beatName = AppDatabase.getDBInstance()?.beatDao()?.getSingleItem(Pref.SelectedBeatIDFromAttend)!!.name
             tv_beat_type.setText(beatName)

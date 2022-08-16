@@ -14,6 +14,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.patrikagroup.R
+import com.patrikagroup.app.Pref
 import com.patrikagroup.app.domain.AddShopDBModelEntity
 import com.patrikagroup.app.domain.BeatEntity
 import com.patrikagroup.app.domain.NewOrderGenderEntity
@@ -68,8 +69,8 @@ class BeatListCustomDialog: DialogFragment() {
         rv_gender.layoutManager = LinearLayoutManager(mContext)
 
 
-        var str = "Beat Type"
-        header.text="Select "+ str
+        var str = "Select " + "${Pref.beatText}" + " Type"
+        header.text=str
 
 
 

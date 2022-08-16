@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.view.Window
 import android.widget.ImageView
 import com.patrikagroup.R
+import com.patrikagroup.app.Pref
 import com.patrikagroup.app.domain.*
 import com.patrikagroup.widgets.AppCustomEditText
 import com.patrikagroup.widgets.AppCustomTextView
@@ -71,7 +72,8 @@ class BeatListDialog : DialogFragment() {
 
         rv_common_dialog_list.adapter = adapter
 
-        dialog_header_TV.text = "Beat/Group List"
+//        dialog_header_TV.text = "Beat/Group List"
+        dialog_header_TV.text = "${Pref.beatText}" + " List"
         et_search = v.findViewById(R.id.et_search)
         iv_close_icon = v.findViewById(R.id.iv_close_icon)
 

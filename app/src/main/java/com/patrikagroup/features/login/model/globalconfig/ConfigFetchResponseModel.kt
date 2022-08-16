@@ -94,7 +94,9 @@ class ConfigFetchResponseModel : BaseResponse() {
     var IsShowHomeLocationMap:Boolean? = null
 
     var IsBeatRouteAvailableinAttendance:Boolean? = null
-    var IsAllBeatAvailableforParty:Boolean? = null
+    var IsAllBeatAvailable:Boolean? = null
+    var BeatText: String = ""
+    var TodaysTaskText:String = ""
 
 
 
