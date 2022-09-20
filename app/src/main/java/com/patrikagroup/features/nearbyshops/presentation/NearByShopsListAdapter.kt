@@ -67,6 +67,7 @@ class NearByShopsListAdapter(context: Context, list: List<AddShopDBModelEntity>,
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val newOrderList = ArrayList<NewOrderModel>()
         fun bindItems(context: Context, list: List<AddShopDBModelEntity>, listener: NearByShopsListClickListener) {
+            println("pjp_tag_adapterr : $position")
             //Picasso.with(context).load(list[adapterPosition].shopImageLocalPath).into(itemView.shop_image_IV)
             try {
                 if (!TextUtils.isEmpty(list[adapterPosition].shopImageLocalPath)) {

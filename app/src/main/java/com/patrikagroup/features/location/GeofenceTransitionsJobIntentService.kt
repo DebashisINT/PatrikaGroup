@@ -55,12 +55,18 @@ class GeofenceTransitionsJobIntentService : JobIntentService() {
     override fun onHandleWork(intent: Intent) {
         XLog.d("Geofence: GeofenceTransitionsJobIntentService : ENTRY")
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
-        if (geofencingEvent!!.hasError()) {
+        try {
+            if (geofencingEvent!!.hasError()) {
 //            val errorMessage = GeofenceErrorMessages.getErrorString(this,
 //                    geofencingEvent.errorCode)
-            Log.e(TAG, "${geofencingEvent!!.errorCode}")
+                Log.e(TAG, "${geofencingEvent!!.errorCode}")
+                return
+            }
+        }catch (ex:Exception){
+            ex.printStackTrace()
             return
         }
+
 
         // Get the transition type.
         val geofenceTransition = geofencingEvent!!.geofenceTransition

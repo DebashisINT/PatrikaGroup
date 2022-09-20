@@ -460,4 +460,6 @@ object Pref : PreferenceHolder() {
     var TodaysTaskText: String by bindToPreferenceField("Today's Task", "TodaysTaskText")
     var isLocationHintPermissionGranted: Boolean by bindToPreferenceField(false, "isLocationHintPermissionGranted")
     var AutostartPermissionStatus: Boolean by bindToPreferenceField(false, "AutostartPermissionStatus")
+
+    var prevShouldPjpUpdateCallTimeStamp: Long by bindToPreferenceField(0, "prevShouldPjpUpdateCallTimeStamp")
 }

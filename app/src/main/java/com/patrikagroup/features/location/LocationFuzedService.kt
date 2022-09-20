@@ -895,9 +895,11 @@ class LocationFuzedService : Service(), GoogleApiClient.ConnectionCallbacks, Goo
             this.sendBroadcast(i)
         }*/
 
-        val intent = Intent()
-        intent.action = "UPDATE_PJP_LIST"
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        if(shouldPjpUpdatecall()){
+            val intent = Intent()
+            intent.action = "UPDATE_PJP_LIST"
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        }
 
     }
 
@@ -2227,7 +2229,19 @@ class LocationFuzedService : Service(), GoogleApiClient.ConnectionCallbacks, Goo
             changeLocale()
             false
         }
+    }
 
+    private fun shouldPjpUpdatecall(): Boolean {
+        AppUtils.changeLanguage(this,"en")
+        return if (abs(System.currentTimeMillis() - Pref.prevShouldPjpUpdateCallTimeStamp) > 1000 * 60 * 10) {
+            Pref.prevShouldPjpUpdateCallTimeStamp = System.currentTimeMillis()
+            changeLocale()
+            true
+            //server timestamp is within 5 minutes of current system time
+        } else {
+            changeLocale()
+            false
+        }
     }
 
     private fun shouldIdealLocationUpdate(): Boolean {
