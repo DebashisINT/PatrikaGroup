@@ -1690,11 +1690,7 @@ class DashboardFragment : BaseFragment(), View.OnClickListener, HBRecorderListen
                                     }
                                 }
                             })
-
-
-
                             rv_pjp_list.adapter = pjpAdapterNew
-
                             progress_wheel.stopSpinning()
                         }
                         else {
