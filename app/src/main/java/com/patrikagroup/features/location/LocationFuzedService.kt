@@ -287,6 +287,7 @@ class LocationFuzedService : Service(), GoogleApiClient.ConnectionCallbacks, Goo
                 notificationChannel.enableLights(true)
                 notificationChannel.lightColor = applicationContext.getColor(R.color.colorPrimary)
                 notificationChannel.enableVibration(true)
+                notificationChannel.setSound(null, null)
                 notificationChannel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 notificationManager.createNotificationChannel(notificationChannel)
 
