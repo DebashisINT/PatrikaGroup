@@ -458,8 +458,27 @@ object Pref : PreferenceHolder() {
     var IsBeatRouteReportAvailableinTeam: Boolean by bindToPreferenceField(false, "IsBeatRouteReportAvailableinTeam")
     var beatText: String by bindToPreferenceField("Beat", "beatText")
     var TodaysTaskText: String by bindToPreferenceField("Today's Task", "TodaysTaskText")
+
     var isLocationHintPermissionGranted: Boolean by bindToPreferenceField(false, "isLocationHintPermissionGranted")
     var AutostartPermissionStatus: Boolean by bindToPreferenceField(false, "AutostartPermissionStatus")
+    var IsDistributorSelectionRequiredinAttendance: Boolean by bindToPreferenceField(false, "IsDistributorSelectionRequiredinAttendance")
+    var SelectedDDIDFromAttend: String by bindToPreferenceField("0", "SelectedDDIDFromAttend")
 
-    var prevShouldPjpUpdateCallTimeStamp: Long by bindToPreferenceField(0, "prevShouldPjpUpdateCallTimeStamp")
+    var PowerSaverStatus: String by bindToPreferenceField("Off", "PowerSaverStatus")
+    var GPSNetworkIntervalMins: String by bindToPreferenceField("0", "GPSNetworkIntervalMins")
+    var prevGpsNetSyncTimeStamp: Long by bindToPreferenceField(0, "prevGpsNetSyncTimeStamp")
+    var prevGpsNetSyncTimeStampService: Long by bindToPreferenceField(0, "prevGpsNetSyncTimeStampService")
+
+    var IsAllowNearbyshopWithBeat: Boolean by bindToPreferenceField(false, "IsAllowNearbyshopWithBeat")
+    var IsGSTINPANEnableInShop:Boolean by bindToPreferenceField(false, "IsGSTINPANEnableInShop")
+
+    var IsMultipleImagesRequired:Boolean by bindToPreferenceField(false, "IsMultipleImagesRequired")
+
+    var IsALLDDRequiredforAttendance:Boolean by bindToPreferenceField(false, "IsALLDDRequiredforAttendance")
+
+    var IsFeedbackMandatoryforNewShop: Boolean by bindToPreferenceField(false, "IsFeedbackMandatoryforNewShop")
+
+
+
+
 }

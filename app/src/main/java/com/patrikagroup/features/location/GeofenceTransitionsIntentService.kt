@@ -35,17 +35,12 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
 
         XLog.d("Geofence: GeofenceTransitionsJobIntentService : ENTRY")
         val geofencingEvent = GeofencingEvent.fromIntent(intent!!)
-        try{
-            if (geofencingEvent!!.hasError()) {
+        if (geofencingEvent!!.hasError()) {
 //            val errorMessage = GeofenceErrorMessages.getErrorString(this,
 //                    geofencingEvent.errorCode)
-                Log.e(TAG, "${geofencingEvent!!.errorCode}")
-                return
-            }
-        }catch (ex:Exception){
+            Log.e(TAG, "${geofencingEvent!!.errorCode}")
             return
         }
-
 
         // Get the transition type.
         val geofenceTransition = geofencingEvent.geofenceTransition
@@ -175,6 +170,16 @@ class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsInten
         shopDurationData.isFirstShopVisited = shopActivity.isFirstShopVisited
         shopDurationData.distanceFromHomeLoc = shopActivity.distance_from_home_loc
         shopDurationData.next_visit_date = shopActivity.next_visit_date
+
+        //duration garbage fix
+        try{
+            if(shopDurationData.spent_duration!!.contains("-") || shopDurationData.spent_duration!!.length != 8)
+            {
+                shopDurationData.spent_duration="00:00:10"
+            }
+        }catch (ex:Exception){
+            shopDurationData.spent_duration="00:00:10"
+        }
         shopDataList.add(shopDurationData)
 
         if (shopDataList.isEmpty()) {

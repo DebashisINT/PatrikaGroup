@@ -166,6 +166,10 @@ open class BaseActivity : AppCompatActivity(), GpsStatusDetector.GpsStatusDetect
 
         //Pref.isAutoLogout=true
         if (Pref.isAutoLogout) {
+            //Pref.isAddAttendence = false
+            //Pref.DayStartMarked = false
+            //Pref.DayEndMarked = false
+
             performLogout()
             //syncShopList()
             //uploadShopRevisitData()
@@ -1420,6 +1424,16 @@ val revisitStatusList : MutableList<ShopRevisitStatusRequestData> = ArrayList()
                 shopDurationData.approximate_1st_billing_value = ""
 
 
+            //duration garbage fix
+            try{
+                if(shopDurationData.spent_duration!!.contains("-") || shopDurationData.spent_duration!!.length != 8)
+                {
+                    shopDurationData.spent_duration="00:00:10"
+                }
+            }catch (ex:Exception){
+                shopDurationData.spent_duration="00:00:10"
+            }
+
             shopDataList.add(shopDurationData)
 
             XLog.d("========SYNC ALL VISITED SHOP DATA (AVERAGE SHOP)=====")
@@ -1629,7 +1643,15 @@ val revisitStatusList : MutableList<ShopRevisitStatusRequestData> = ArrayList()
         else
             shopDurationData.approximate_1st_billing_value = ""
 
-
+        //duration garbage fix
+        try{
+            if(shopDurationData.spent_duration!!.contains("-") || shopDurationData.spent_duration!!.length != 8)
+            {
+                shopDurationData.spent_duration="00:00:10"
+            }
+        }catch (ex:Exception){
+            shopDurationData.spent_duration="00:00:10"
+        }
 
         shopDataList.add(shopDurationData)
 
@@ -2219,6 +2241,9 @@ val revisitStatusList : MutableList<ShopRevisitStatusRequestData> = ArrayList()
             addShopData.isShopDuplicate=mAddShopDBModelEntity.isShopDuplicate
 
             addShopData.purpose=mAddShopDBModelEntity.purpose
+
+            addShopData.GSTN_Number=mAddShopDBModelEntity.gstN_Number
+            addShopData.ShopOwner_PAN=mAddShopDBModelEntity.shopOwner_PAN
 
 
             callAddShopApi(addShopData, mAddShopDBModelEntity.shopImageLocalPath, shopList, true,

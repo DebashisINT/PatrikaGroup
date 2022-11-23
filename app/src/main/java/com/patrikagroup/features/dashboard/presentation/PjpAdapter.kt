@@ -48,7 +48,7 @@ class PjpAdapter(private val context: Context, private val list: ArrayList<PjpLi
 
         fun bindItems(context: Context, list: ArrayList<PjpListEntity>, position: Int, listener: PJPClickListner) {
             itemView.apply {
-                println("pjp_tag_adapter : $position")
+
                 rl_pjp_status.visibility = View.VISIBLE
 
                 if (!TextUtils.isEmpty(list?.get(position)?.customer_name)) {
@@ -117,16 +117,14 @@ class PjpAdapter(private val context: Context, private val list: ArrayList<PjpLi
                     })
 
 
-                }
-                else if (!TextUtils.isEmpty(list?.get(position)?.location)) {
+                } else if (!TextUtils.isEmpty(list?.get(position)?.location)) {
                     tv_pjp_name.text = list?.get(position)?.location
 
                     itemView.iv_task_icon.setImageResource(R.drawable.ic_others_icon)
                     itemView.tv_status.text = ""
                     val bgShape = itemView.view.background as GradientDrawable
                     bgShape.setColor(context.resources.getColor(R.color.purple))
-                }
-                else {
+                } else {
                     tv_pjp_name.text = "Other PJP"
 
                     itemView.iv_task_icon.setImageResource(R.drawable.ic_others_icon)
@@ -134,7 +132,6 @@ class PjpAdapter(private val context: Context, private val list: ArrayList<PjpLi
                     val bgShape = itemView.view.background as GradientDrawable
                     bgShape.setColor(context.resources.getColor(R.color.purple))
                 }
-
             }
         }
 

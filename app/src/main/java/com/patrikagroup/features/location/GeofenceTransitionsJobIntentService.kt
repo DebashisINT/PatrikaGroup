@@ -63,7 +63,6 @@ class GeofenceTransitionsJobIntentService : JobIntentService() {
                 return
             }
         }catch (ex:Exception){
-            ex.printStackTrace()
             return
         }
 

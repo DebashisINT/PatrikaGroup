@@ -1,6 +1,7 @@
 package com.patrikagroup.features.splash.presentation
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
@@ -9,16 +10,16 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.PowerManager
+import android.os.*
 import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.patrikagroup.BuildConfig
 import com.patrikagroup.R
 import com.patrikagroup.app.NetworkConstant
@@ -40,11 +41,11 @@ import com.patrikagroup.features.splash.presentation.model.VersionCheckingRepons
 import com.elvishew.xlog.XLog
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.messaging.FirebaseMessaging
-import com.patrikagroup.features.splash.presentation.model.LocationHintDialog
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_splash.*
 import net.alexandroid.gps.GpsStatusDetector
+import java.util.*
 import kotlin.system.exitProcess
 
 
@@ -64,28 +65,37 @@ class SplashActivity : BaseActivity(), GpsStatusDetector.GpsStatusDetectorCallBa
     data class PermissionDetails(var permissionName: String, var permissionTag: Int)
 
 //test
+    @SuppressLint("SuspiciousIndentation")
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
-//        Handler().postDelayed({ goToNextScreen() }, 2000)
-
+        //Handler().postDelayed({ goToNextScreen() }, 2000)
+    println("splash " + Pref.user_id);
         //Code by wasim
-       // this is for test purpose timing seeting
-      // AlarmReceiver.setAlarm(this, 17, 45, 2017)
+        // this is for test purpose timing seeting
+        // AlarmReceiver.setAlarm(this, 17, 45, 2017)
 
+    /*FirebaseMessaging.getInstance().subscribeToTopic("newss").addOnSuccessListener(object : OnSuccessListener<Void?> {
+        override fun onSuccess(aVoid: Void?) {
+            //Toast.makeText(applicationContext, "Success", Toast.LENGTH_LONG).show()
+        }
+    })*/
 
-        FirebaseMessaging.getInstance().subscribeToTopic("newss").addOnSuccessListener(object : OnSuccessListener<Void?> {
-            override fun onSuccess(aVoid: Void?) {
-                //Toast.makeText(applicationContext, "Success", Toast.LENGTH_LONG).show()
-            }
-        })
+    /* val email = Intent(Intent.ACTION_SENDTO)
+    email.setData(Uri.parse("mailto:"))
+    email.putExtra(Intent.EXTRA_EMAIL, arrayOf<String>("saheli.bhattacharjee@indusnet.co.in"))
+    email.putExtra(Intent.EXTRA_SUBJECT, "sub")
+    email.putExtra(Intent.EXTRA_TEXT, "msg")
+    //email.type = "message/rfc822"
+    startActivity(Intent.createChooser(email, "Send mail..."))*/
 
-        val receiver = ComponentName(this, AlarmBootReceiver::class.java)
+    val receiver = ComponentName(this, AlarmBootReceiver::class.java)
         packageManager.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
 
         progress_wheel = findViewById(R.id.progress_wheel)
         progress_wheel.stopSpinning()
+
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -94,7 +104,8 @@ class SplashActivity : BaseActivity(), GpsStatusDetector.GpsStatusDetectorCallBa
             else {
                 LocationPermissionDialog.newInstance(object : LocationPermissionDialog.OnItemSelectedListener {
                     override fun onOkClick() {
-//                        initPermissionCheck()
+                        //initPermissionCheck()
+
                         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R && Pref.isLocationHintPermissionGranted == false){
                             locDesc()
                         }else{
@@ -112,6 +123,8 @@ class SplashActivity : BaseActivity(), GpsStatusDetector.GpsStatusDetectorCallBa
         }
         permissionCheck()
     }
+
+
 
     private fun locDesc(){
         LocationHintDialog.newInstance(object : LocationHintDialog.OnItemSelectedListener {
@@ -379,6 +392,30 @@ class SplashActivity : BaseActivity(), GpsStatusDetector.GpsStatusDetectorCallBa
         }
     }
 
+    /*private fun goToNextScreen() {
+        var manager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        //if (/*manager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&*/ PermissionHelper.checkLocationPermission(this, 0)) {
+        if (TextUtils.isEmpty(Pref.user_id) || Pref.user_id.isNullOrBlank()) {
+            if (!isLoginLoaded) {
+                isLoginLoaded = true
+                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+                finish()
+            }
+
+        } else {
+            startActivity(Intent(this@SplashActivity, DashboardActivity::class.java))
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+            finish()
+        }
+        //}
+        /*else if(!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            startActivity(Intent(this@SplashActivity, DashboardActivity::class.java))
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+            finish()
+        }*/
+    }*/
+
     private fun goToNextScreen() {
         addAutoStartup()
     }
@@ -411,6 +448,8 @@ class SplashActivity : BaseActivity(), GpsStatusDetector.GpsStatusDetectorCallBa
             goTONextActi()
         }
     }
+
+
     fun goTONextActi(){
         if (TextUtils.isEmpty(Pref.user_id) || Pref.user_id.isNullOrBlank()) {
             if (!isLoginLoaded) {
@@ -426,30 +465,6 @@ class SplashActivity : BaseActivity(), GpsStatusDetector.GpsStatusDetectorCallBa
             finish()
         }
     }
-
-//    private fun goToNextScreen() {
-//        var manager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-//        //if (/*manager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&*/ PermissionHelper.checkLocationPermission(this, 0)) {
-//        if (TextUtils.isEmpty(Pref.user_id) || Pref.user_id.isNullOrBlank()) {
-//            if (!isLoginLoaded) {
-//                isLoginLoaded = true
-//                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
-//                overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-//                finish()
-//            }
-//
-//        } else {
-//            startActivity(Intent(this@SplashActivity, DashboardActivity::class.java))
-//            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-//            finish()
-//        }
-//        //}
-//        /*else if(!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-//            startActivity(Intent(this@SplashActivity, DashboardActivity::class.java))
-//            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-//            finish()
-//        }*/
-//    }
 
     override fun onResume() {
         super.onResume()

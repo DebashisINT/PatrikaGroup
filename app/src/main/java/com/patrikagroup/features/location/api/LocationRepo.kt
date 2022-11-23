@@ -4,6 +4,7 @@ import com.patrikagroup.app.Pref
 import com.patrikagroup.base.BaseResponse
 import com.patrikagroup.features.location.model.AppInfoInputModel
 import com.patrikagroup.features.location.model.AppInfoResponseModel
+import com.patrikagroup.features.location.model.GpsNetInputModel
 import com.patrikagroup.features.location.model.ShopDurationRequest
 import com.patrikagroup.features.location.shopdurationapi.ShopDurationApi
 import io.reactivex.Observable
@@ -18,5 +19,9 @@ class LocationRepo(val apiService: LocationApi) {
 
     fun getAppInfo(): Observable<AppInfoResponseModel> {
         return apiService.getAppInfo(Pref.session_token!!, Pref.user_id!!)
+    }
+
+    fun gpsNetInfo(appInfo: GpsNetInputModel?): Observable<BaseResponse> {
+        return apiService.submitGpsNetInfo(appInfo)
     }
 }

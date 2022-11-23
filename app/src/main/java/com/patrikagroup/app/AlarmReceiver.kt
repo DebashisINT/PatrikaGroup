@@ -215,8 +215,9 @@ class AlarmReceiver : BroadcastReceiver() {
             val intent = Intent(context, AlarmReceiver::class.java)
             intent.putExtra("requestCode", requestCode)
 //            val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_ONE_SHOT)
-            // FLAG_IMMUTABLE update
+        // FLAG_IMMUTABLE update
             val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE)
+
             val calendar = Calendar.getInstance(Locale.ENGLISH)
 
             calendar.timeInMillis = System.currentTimeMillis()
@@ -242,6 +243,7 @@ class AlarmReceiver : BroadcastReceiver() {
 //            val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_ONE_SHOT)
             // FLAG_IMMUTABLE update
             val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE)
+
             val calendar = Calendar.getInstance(Locale.ENGLISH)
 
             calendar.timeInMillis = System.currentTimeMillis()
@@ -278,7 +280,9 @@ class AlarmReceiver : BroadcastReceiver() {
             cal.add(Calendar.SECOND, 20)
             val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager//get instance of alarm manager
             val alarmIntent = Intent(context, AlarmReceiver::class.java)
-            val pendingIntent = PendingIntent.getBroadcast(context, requestCode, alarmIntent, 0)
+//            val pendingIntent = PendingIntent.getBroadcast(context, requestCode, alarmIntent, 0)
+            // FLAG_IMMUTABLE update
+            val pendingIntent = PendingIntent.getBroadcast(context, requestCode, alarmIntent,PendingIntent.FLAG_IMMUTABLE)
             manager.set(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pendingIntent)//set alarm manager with entered timer by converting into milliseconds
 
 
@@ -289,7 +293,7 @@ class AlarmReceiver : BroadcastReceiver() {
             val alarmIntent = Intent(context, AlarmReceiver::class.java)
 //            val pendingIntent = PendingIntent.getBroadcast(context, alarmRequestCode, alarmIntent, PendingIntent.FLAG_NO_CREATE)
             // FLAG_IMMUTABLE update
-            val pendingIntent = PendingIntent.getBroadcast(context, alarmRequestCode, alarmIntent,  PendingIntent.FLAG_IMMUTABLE)
+            val pendingIntent = PendingIntent.getBroadcast(context, alarmRequestCode, alarmIntent, PendingIntent.FLAG_IMMUTABLE)
             if (pendingIntent != null) {
                 manager.cancel(pendingIntent)//cancel the alarm manager of the pending intent
             }
