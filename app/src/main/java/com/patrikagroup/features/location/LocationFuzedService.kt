@@ -295,8 +295,7 @@ class LocationFuzedService : Service(), GoogleApiClient.ConnectionCallbacks, Goo
                         .setTicker("")
                         .setContentText("")
                         .setSmallIcon(R.drawable.ic_notifications_icon)
-                        .setLargeIcon(
-                                Bitmap.createScaledBitmap(icon, 128, 128, false))
+                        .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
                         .setContentIntent(pendingIntent)
                         .setOngoing(true)
                         .setChannelId(channelId)
