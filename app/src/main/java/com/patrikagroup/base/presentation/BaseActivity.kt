@@ -67,6 +67,9 @@ import com.patrikagroup.features.location.model.ShopRevisitStatusRequest
 import com.patrikagroup.features.location.model.ShopRevisitStatusRequestData
 import com.patrikagroup.features.location.shopRevisitStatus.ShopRevisitStatusRepositoryProvider
 import com.patrikagroup.features.location.shopdurationapi.ShopDurationRepositoryProvider
+import com.patrikagroup.features.performance.model.Gps_status_list
+import com.patrikagroup.features.performance.model.UpdateGpsInputListParamsModel
+import com.patrikagroup.features.viewAllOrder.orderNew.NeworderScrCartFragment
 import com.patrikagroup.mappackage.SendBrod
 import com.patrikagroup.widgets.AppCustomTextView
 import com.google.android.gms.location.FusedLocationProviderApi
@@ -78,11 +81,16 @@ import net.alexandroid.gps.GpsStatusDetector
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 /**
  * Created by Pratishruti on 26-10-2017.
  */
+//Revision History
+// 1.0 BaseActivity AppV 4.0.6  Saheli    12/01/2023  multiple contact Data added on Api called
+// 2.0 BaseActivity AppV 4.0.7  Saheli    16/02/2023 mantis autologout issue 25678
+// 3.0 BaseActivity AppV 4.0.7  Saheli    20/02/2023 mantis gps with list issue 0025685
 
 open class BaseActivity : AppCompatActivity(), GpsStatusDetector.GpsStatusDetectorCallBack {
 
@@ -164,7 +172,7 @@ open class BaseActivity : AppCompatActivity(), GpsStatusDetector.GpsStatusDetect
         } /*else
             Pref.isAutoLogout = false*/
 
-        //Pref.isAutoLogout=true
+//        Pref.isAutoLogout=true
         if (Pref.isAutoLogout) {
             //Pref.isAddAttendence = false
             //Pref.DayStartMarked = false
@@ -658,7 +666,7 @@ private fun callUpdateGpsStatusApi(list: List<GpsStatusEntity>) {
                         }
 
                         i++
-                        if (i < list.size) {
+                        if (i < list.size && false) { // 2.0 BaseActivity AppV 4.0.7  mantis autologout issue 25678
                             callUpdateGpsStatusApi(list)
                         } else {
                             i = 0
@@ -681,6 +689,66 @@ private fun callUpdateGpsStatusApi(list: List<GpsStatusEntity>) {
                     })
     )
 }
+
+    // 3.0 BaseActivity AppV 4.0.7  mantis gps with list issue 0025685
+ /*   private fun callUpdateGpsStatusApi(list: List<GpsStatusEntity>) {
+
+        var updateGpsReq = UpdateGpsInputListParamsModel()
+        for(i in 0..list.size-1){
+            var obj = Gps_status_list()
+            obj.session_token = Pref.session_token.toString()
+            obj.user_id = Pref.user_id.toString()
+            obj.gps_id = list.get(i).gps_id.toString()
+            obj.date = list.get(i).date.toString()
+            obj.gps_off_time = list.get(i).gps_off_time.toString()
+            obj.gps_on_time = list.get(i).gps_on_time.toString()
+            obj.duration = AppUtils.getTimeInHourMinuteFormat(list[i].duration?.toLong()!!)
+            updateGpsReq.gps_status_list.add(obj)
+        }
+
+
+        getProgressInstance().showDialogForLoading(this@BaseActivity)
+
+        val repository = UpdateGpsStatusRepoProvider.updateGpsStatusRepository()
+        BaseActivity.compositeDisposable.add(
+            repository.updateGpsStatuswithList(updateGpsReq)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe({ result ->
+                    val gpsStatusResponse = result as BaseResponse
+                    XLog.d("GPS_STATUS : " + "RESPONSE : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name
+                            + ",MESSAGE : " + gpsStatusResponse.message)
+                    if (gpsStatusResponse.status == NetworkConstant.SUCCESS) {
+                        AppDatabase.getDBInstance()!!.gpsStatusDao().updateIsUploadedAccordingToId(true, list[i].id)
+                    }
+                    getProgressInstance().dismissDialog()
+                    checkToCallLocationSync()
+//                    i++
+//                    if (i < list.size && false) { // 2.0 BaseActivity AppV 4.0.7  mantis autologout issue 25678
+//                        callUpdateGpsStatusApi(list)
+//                    } else {
+//                        i = 0
+//                        getProgressInstance().dismissDialog()
+//                        checkToCallLocationSync()
+//                    }
+
+                }, { error ->
+                    //
+                    XLog.d("GPS_STATUS : " + "RESPONSE ERROR: " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
+                    error.printStackTrace()
+                    getProgressInstance().dismissDialog()
+                    checkToCallLocationSync()
+//                    i++
+//                    if (i < list.size) {
+//                        callUpdateGpsStatusApi(list)
+//                    } else {
+//                        i = 0
+//                        getProgressInstance().dismissDialog()
+//                        checkToCallLocationSync()
+//                    }
+                })
+        )
+    }*/
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 private fun calllogoutApi(user_id: String, session_id: String) {
@@ -1433,6 +1501,13 @@ val revisitStatusList : MutableList<ShopRevisitStatusRequestData> = ArrayList()
             }catch (ex:Exception){
                 shopDurationData.spent_duration="00:00:10"
             }
+            //New shop Create issue
+            shopDurationData.isnewShop=shopActivity.isnewShop
+
+            // 1.0 BaseActivity AppV 4.0.6  multiple contact Data added on Api called
+            shopDurationData.multi_contact_name = shopActivity.multi_contact_name
+            shopDurationData.multi_contact_number = shopActivity.multi_contact_number
+
 
             shopDataList.add(shopDurationData)
 
@@ -1652,6 +1727,12 @@ val revisitStatusList : MutableList<ShopRevisitStatusRequestData> = ArrayList()
         }catch (ex:Exception){
             shopDurationData.spent_duration="00:00:10"
         }
+        //New shop Create issue
+        shopDurationData.isnewShop = shopActivity.isnewShop!!
+
+        // 1.0 BaseActivity AppV 4.0.6  multiple contact Data added on Api called
+        shopDurationData.multi_contact_name = shopActivity.multi_contact_name
+        shopDurationData.multi_contact_number = shopActivity.multi_contact_number
 
         shopDataList.add(shopDurationData)
 

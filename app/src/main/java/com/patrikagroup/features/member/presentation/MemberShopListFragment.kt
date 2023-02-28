@@ -1,8 +1,11 @@
 package com.patrikagroup.features.member.presentation
 
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
 import android.location.Location
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import androidx.core.content.ContextCompat
 import androidx.appcompat.widget.AppCompatRadioButton
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,10 +20,7 @@ import com.github.clans.fab.FloatingActionButton
 import com.github.clans.fab.FloatingActionMenu
 import com.pnikosis.materialishprogress.ProgressWheel
 import com.patrikagroup.R
-import com.patrikagroup.app.AppDatabase
-import com.patrikagroup.app.NetworkConstant
-import com.patrikagroup.app.Pref
-import com.patrikagroup.app.SearchListener
+import com.patrikagroup.app.*
 import com.patrikagroup.app.types.FragType
 import com.patrikagroup.app.utils.AppUtils
 import com.patrikagroup.app.utils.FTStorageUtils
@@ -42,6 +42,8 @@ import kotlin.concurrent.schedule
 /**
  * Created by Saikat on 31-01-2020.
  */
+// Revision Histroy
+// 1.0 MemberShopListFragment saheli 24-02-2032 AppV 4.0.7 mantis 0025683
 class MemberShopListFragment : BaseFragment(), View.OnClickListener {
 
     private lateinit var mContext: Context
@@ -116,8 +118,52 @@ class MemberShopListFragment : BaseFragment(), View.OnClickListener {
 
         })
 
+        // 1.0 MemberListFragment AppV 4.0.7 mantis 0025683 start
+        (mContext as DashboardActivity).searchView.setVoiceIcon(R.drawable.ic_mic)
+        (mContext as DashboardActivity).searchView.setOnVoiceClickedListener({ startVoiceInput() })
+        // 1.0 MemberListFragment AppV 4.0.7 mantis 0025683 end
+
         return view
     }
+    // 1.0 MemberListFragment AppV 4.0.7 mantis 0025683 start
+    private fun startVoiceInput() {
+        try {
+            val intent: Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            intent.putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
+            //intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,"hi")
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.ENGLISH)
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Hello, How can I help you?")
+            try {
+                startActivityForResult(intent, MaterialSearchView.REQUEST_VOICE)
+            } catch (a: ActivityNotFoundException) {
+                a.printStackTrace()
+            }
+        }
+        catch (ex:Exception) {
+            ex.printStackTrace()
+        }
+
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?){
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == MaterialSearchView.REQUEST_VOICE){
+            try {
+                val result = data!!.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                var t= result!![0]
+                (mContext as DashboardActivity).searchView.setQuery(t,false)
+            }
+            catch (ex:Exception) {
+                ex.printStackTrace()
+            }
+
+//            tv_search_frag_order_type_list.setText(t)
+//            tv_search_frag_order_type_list.setSelection(t.length);
+        }
+    }
+    // 1.0 MemberListFragment AppV 4.0.7 mantis 0025683 end
 
     private fun initView(view: View) {
         floating_fab = view.findViewById(R.id.floating_fab)

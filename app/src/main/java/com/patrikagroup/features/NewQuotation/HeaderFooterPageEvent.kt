@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import com.patrikagroup.R
+import com.patrikagroup.app.Pref
 import com.patrikagroup.app.utils.AppUtils
 import com.itextpdf.text.*
 import com.itextpdf.text.pdf.ColumnText
@@ -33,8 +34,14 @@ class HeaderFooterPageEvent : PdfPageEventHelper() {
         //Hardcoded for EuroBond
 //        val bm: Bitmap = BitmapFactory.decodeResource(AppUtils.contx!!.resources, R.drawable.ics_image_full)
 //          val bm: Bitmap = BitmapFactory.decodeResource(AppUtils.contx!!.resources, R.drawable.footer_icon_euro)
-        val bm: Bitmap = BitmapFactory.decodeResource(AppUtils.contx!!.resources, R.drawable.strip_line)
-        val bitmap = Bitmap.createScaledBitmap(bm, 690, 70, true);
+        var bm: Bitmap
+        if(Pref.IsShowQuotationFooterforEurobond){
+            bm = BitmapFactory.decodeResource(AppUtils.contx!!.resources, R.drawable.footer_icon_euro)
+        }else{
+            bm = BitmapFactory.decodeResource(AppUtils.contx!!.resources, R.drawable.strip_line)
+        }
+
+        val bitmap = Bitmap.createScaledBitmap(bm, 950, 80, true);
         val stream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
         var img: Image? = null
@@ -42,7 +49,7 @@ class HeaderFooterPageEvent : PdfPageEventHelper() {
         try {
             img = Image.getInstance(byteArray)
           //  img.scaleToFit(155f,90f)
-            img.scalePercent(80f)
+            img.scalePercent(50f)
             img.alignment=Image.ALIGN_RIGHT
         } catch (e: BadElementException) {
             e.printStackTrace()

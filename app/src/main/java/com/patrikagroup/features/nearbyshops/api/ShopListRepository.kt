@@ -1,6 +1,7 @@
 package com.patrikagroup.features.nearbyshops.api
 
 import com.patrikagroup.app.Pref
+import com.patrikagroup.base.BaseResponse
 import com.patrikagroup.features.login.model.GetQtsAnsSubmitDtlsResponseModel
 import com.patrikagroup.features.login.model.GetSecImageUploadResponseModel
 import com.patrikagroup.features.login.model.productlistmodel.ModelListResponse
@@ -71,4 +72,10 @@ class ShopListRepository(val apiService: ShopListApi) {
     fun getQuestionList(): Observable<QuesListResponseModel> {
         return apiService.getQuesList(Pref.session_token!!, Pref.user_id!!)
     }
+
+    fun deleteImei(): Observable<BaseResponse> {
+        return apiService.deleteImeiAPI(Pref.session_token!!, Pref.user_id!!)
+    }
+
+
 }

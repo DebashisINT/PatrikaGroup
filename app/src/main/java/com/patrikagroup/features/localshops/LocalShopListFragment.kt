@@ -3,9 +3,15 @@ package com.patrikagroup.features.localshops
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.location.Location
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextUtils
@@ -24,6 +30,7 @@ import com.github.clans.fab.FloatingActionButton
 import com.github.clans.fab.FloatingActionMenu
 import com.patrikagroup.R
 import com.patrikagroup.app.AppDatabase
+import com.patrikagroup.app.MaterialSearchView
 import com.patrikagroup.app.Pref
 import com.patrikagroup.app.SearchListener
 import com.patrikagroup.app.domain.AddShopDBModelEntity
@@ -38,12 +45,15 @@ import com.patrikagroup.features.commondialogsinglebtn.AddFeedbackSingleBtnDialo
 import com.patrikagroup.features.dashboard.presentation.DashboardActivity
 import com.patrikagroup.features.location.LocationWizard.Companion.NEARBY_RADIUS
 import com.patrikagroup.features.location.SingleShotLocationProvider
+import com.patrikagroup.widgets.AppCustomTextView
 import java.util.*
 import kotlin.collections.ArrayList
 
 /**
  * Created by riddhi on 2/1/18.
  */
+//Revision History
+// 1.0 LocalShopListFragment saheli 24-02-2032 AppV 4.0.7 mantis 0025683
 class LocalShopListFragment : BaseFragment(), View.OnClickListener {
 
 
@@ -87,8 +97,54 @@ class LocalShopListFragment : BaseFragment(), View.OnClickListener {
                 }
             }
         })
+
+        // 1.0 MicroLearningListFragment AppV 4.0.7 mantis 0025683 start
+        (mContext as DashboardActivity).searchView.setVoiceIcon(R.drawable.ic_mic)
+        (mContext as DashboardActivity).searchView.setOnVoiceClickedListener({ startVoiceInput() })
+        // 1.0 MicroLearningListFragment AppV 4.0.7 mantis 0025683 end
+
         return view
     }
+
+    // 1.0 MicroLearningListFragment AppV 4.0.7 mantis 0025683 start
+    private fun startVoiceInput() {
+        try {
+            val intent: Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            intent.putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
+            //intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,"hi")
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.ENGLISH)
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Hello, How can I help you?")
+            try {
+                startActivityForResult(intent, MaterialSearchView.REQUEST_VOICE)
+            } catch (a: ActivityNotFoundException) {
+                a.printStackTrace()
+            }
+        }
+        catch (ex: java.lang.Exception) {
+            ex.printStackTrace()
+        }
+
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?){
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == MaterialSearchView.REQUEST_VOICE){
+            try {
+                val result = data!!.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                var t= result!![0]
+                (mContext as DashboardActivity).searchView.setQuery(t,false)
+            }
+            catch (ex: java.lang.Exception) {
+                ex.printStackTrace()
+            }
+
+//            tv_search_frag_order_type_list.setText(t)
+//            tv_search_frag_order_type_list.setSelection(t.length);
+        }
+    }
+    // 1.0 MicroLearningListFragment AppV 4.0.7 mantis 0025683 end
 
     override fun updateUI(any: Any) {
         super.updateUI(any)
@@ -251,8 +307,32 @@ class LocalShopListFragment : BaseFragment(), View.OnClickListener {
 
             try {
 
-                localShopsListAdapter = LocalShopsListAdapter(mContext, list, object : LocalShopListClickListener {
-                    override fun onQuationClick(shop: Any) {
+                localShopsListAdapter = LocalShopsListAdapter(mContext, list,
+                    object : LocalShopListClickListener {
+                        override fun outLocation(shop_id: String) {
+
+                            var ob = AppDatabase.getDBInstance()!!.addShopEntryDao().getShopByIdN(shop_id)
+                            var feedbackDialog: AddFeedbackSingleBtnDialog? = null
+                            feedbackDialog = AddFeedbackSingleBtnDialog.getInstance(ob.shopName + "\n" + ob.ownerContactNumber, getString(R.string.confirm_revisit), shop_id, object : AddFeedbackSingleBtnDialog.OnOkClickListener {
+                                override fun onOkClick(mFeedback: String, mNextVisitDate: String, filePath: String, mapproxValue: String, mprosId: String,sel_extraContNameStr:String,sel_extraContPhStr:String) {
+                                    AppDatabase.getDBInstance()!!.shopActivityDao().updateFeedbackVisitdate(mFeedback,mNextVisitDate, shop_id, AppUtils.getCurrentDateForShopActi())
+                                    manualProceed(shop_id)
+                                }
+
+                                override fun onCloseClick(mfeedback: String,sel_extraContNameStr :String,sel_extraContPhStr : String) {
+                                    //
+                                    manualProceed(shop_id)
+                                }
+
+                                override fun onClickCompetitorImg() {
+                                    //
+                                }
+                            })
+                            feedbackDialog?.show((mContext as DashboardActivity).supportFragmentManager, "AddFeedbackSingleBtnDialog")
+
+                        }
+
+                        override fun onQuationClick(shop: Any) {
                         (mContext as DashboardActivity).isBack = true
                         val nearbyShop: AddShopDBModelEntity = shop as AddShopDBModelEntity
                         (mContext as DashboardActivity).loadFragment(FragType.QuotationListFragment, true, nearbyShop.shop_id)
@@ -337,6 +417,28 @@ class LocalShopListFragment : BaseFragment(), View.OnClickListener {
 
         progress_wheel.stopSpinning()
 
+    }
+
+    fun manualProceed(shop_id:String){
+        progress_wheel.spin()
+        AppUtils.endShopDuration(shop_id, mContext)
+
+        var statusL = AppDatabase.getDBInstance()!!.shopActivityDao().getShopForDay(shop_id, AppUtils.getCurrentDateForShopActi())
+        val duration = AppUtils.getTimeFromTimeSpan(statusL.get(0).startTimeStamp,statusL.get(0).endTimeStamp)
+        progress_wheel.stopSpinning()
+
+        val simpleDialog = Dialog(mContext)
+        simpleDialog.setCancelable(false)
+        simpleDialog.getWindow()!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        simpleDialog.setContentView(R.layout.dialog_ok)
+        val dialogHeader = simpleDialog.findViewById(R.id.dialog_yes_header_TV) as AppCustomTextView
+        dialogHeader.text = "Your spend duration for the outlet ${statusL.get(0).shop_name} is $duration"
+        val dialogYes = simpleDialog.findViewById(R.id.tv_dialog_yes) as AppCustomTextView
+        dialogYes.setOnClickListener({ view ->
+            simpleDialog.cancel()
+            getNearyShopList(AppUtils.mLocation!!)
+        })
+        simpleDialog.show()
     }
 
 
@@ -450,6 +552,7 @@ class LocalShopListFragment : BaseFragment(), View.OnClickListener {
         val allShopList = AppDatabase.getDBInstance()!!.addShopEntryDao().getAllOwn(true)
 
         val newList = java.util.ArrayList<AddShopDBModelEntity>()
+        progress_wheel.spin()
 
         for (i in allShopList.indices) {
             /*val userId = allShopList[i].shop_id.substring(0, allShopList[i].shop_id.indexOf("_"))
@@ -519,6 +622,7 @@ class LocalShopListFragment : BaseFragment(), View.OnClickListener {
         }
 
         initAdapter()
+        progress_wheel.stopSpinning()
     }
 
     fun shoulIBotherToUpdate(shopId: String): Boolean {

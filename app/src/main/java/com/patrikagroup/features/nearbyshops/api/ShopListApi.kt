@@ -1,6 +1,7 @@
 package com.patrikagroup.features.nearbyshops.api
 
 import com.patrikagroup.app.NetworkConstant
+import com.patrikagroup.base.BaseResponse
 import com.patrikagroup.features.login.model.GetQtsAnsSubmitDtlsResponseModel
 import com.patrikagroup.features.login.model.GetSecImageUploadResponseModel
 import com.patrikagroup.features.login.model.productlistmodel.ModelListResponse
@@ -74,6 +75,10 @@ interface ShopListApi {
     @POST("RubyFoodLead/QuestionAnswerList")
     fun getQuestionAnsSubmitDetails(@Field("session_token") session_token:String,@Field("user_id") user_id:String)
             : Observable<GetQtsAnsSubmitDtlsResponseModel>
+
+    @FormUrlEncoded
+    @POST("EmployeeSync/UserIMEIClear")
+    fun deleteImeiAPI(@Field("session_token") session_token:String,@Field("user_id") user_id:String): Observable<BaseResponse>
 
 
     @FormUrlEncoded

@@ -51,6 +51,7 @@ import com.patrikagroup.faceRec.FaceStartActivity
 import com.patrikagroup.faceRec.FaceStartActivity.detector
 import com.patrikagroup.faceRec.tflite.SimilarityClassifier.Recognition
 import com.patrikagroup.faceRec.tflite.TFLiteObjectDetectionAPIModel
+import com.patrikagroup.features.NewQuotation.dialog.MemberSalesmanListDialog
 import com.patrikagroup.features.addAttendence.api.WorkTypeListRepoProvider
 import com.patrikagroup.features.addAttendence.api.addattendenceapi.AddAttendenceRepoProvider
 import com.patrikagroup.features.addAttendence.api.leavetytpeapi.LeaveTypeRepoProvider
@@ -65,6 +66,9 @@ import com.patrikagroup.features.location.LocationWizard
 import com.patrikagroup.features.location.SingleShotLocationProvider
 import com.patrikagroup.features.login.UserLoginDataEntity
 import com.patrikagroup.features.login.model.LoginStateListDataModel
+import com.patrikagroup.features.member.api.TeamRepoProvider
+import com.patrikagroup.features.member.model.TeamListDataModel
+import com.patrikagroup.features.member.model.TeamListResponseModel
 import com.patrikagroup.features.newcollectionreport.PendingCollData
 import com.patrikagroup.features.photoReg.api.GetUserListPhotoRegProvider
 import com.patrikagroup.features.photoReg.model.UserFacePicUrlResponse
@@ -104,6 +108,9 @@ import kotlin.collections.ArrayList
 /**
  * Created by Saikat on 29-08-2018.
  */
+// Revision History
+// 1.0 AddAttendanceFragment AppV 4.0.6 saheli 23-01-2023 25615 mantis add Attendance nearbyDD avalible
+// 2.0 AddAttendanceFragment AppV 4.0.7 saheli 15-01-2023 mantis 25674  work type checking strong
 class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog.OnDateSetListener, OnMapReadyCallback {
 
     private lateinit var mContext: Context
@@ -159,6 +166,18 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
     private lateinit var tv_dd: AppCustomTextView
     private lateinit var cv_dd: CardView
 
+    private lateinit var card_root_joint_visit_check: CardView
+    private lateinit var card_root_joint_team_sel: CardView
+    private lateinit var cb_frag_attend_joint_visit: CheckBox
+
+    private lateinit var tv_frag_attend_team_member: AppCustomTextView
+
+    private var member_list: ArrayList<TeamListDataModel>? = null
+
+    private var str_selUserName : String = ""
+    private var str_selUserID : String = ""
+    private var isJointVisitSel : Boolean = false
+
     private var isOnLeave = false
     private var workTypeId = ""
 
@@ -184,6 +203,8 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
     private var toLat = ""
     private var toLong = ""
     private var assignedToDDId = ""
+
+    private var isDiswiseNearBYshopVisit : String = "No" // 1.0 AddAttendanceFragment AppV 4.0.6 25615 mantis
 
     private val addAttendenceModel: AddAttendenceInpuModel by lazy {
         AddAttendenceInpuModel()
@@ -284,6 +305,25 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
         tv_beat_type= view.findViewById(R.id.tv_beat_type)
         tv_dd = view.findViewById(R.id.tv_dd)
         cv_dd = view.findViewById(R.id.cv_dd_root)
+
+        tv_frag_attend_team_member = view.findViewById(R.id.tv_frag_attend_team_member)
+        card_root_joint_visit_check = view.findViewById(R.id.card_root_joint_visit_check)
+        card_root_joint_team_sel = view.findViewById(R.id.card_root_joint_team_sel)
+        cb_frag_attend_joint_visit = view.findViewById(R.id.cb_frag_attend_joint_visit)
+        card_root_joint_team_sel.setOnClickListener(this)
+        tv_frag_attend_team_member.setOnClickListener(this)
+        card_root_joint_team_sel.visibility = View.GONE
+        card_root_joint_visit_check.visibility = View.GONE
+
+        cb_frag_attend_joint_visit.setOnCheckedChangeListener{ buttonView, isChecked ->
+                if (isChecked){
+                    isJointVisitSel = true
+                    card_root_joint_team_sel.visibility = View.VISIBLE
+                }else{
+                    isJointVisitSel = false
+                    card_root_joint_team_sel.visibility = View.GONE
+                }
+            }
 
 
         tv_beat_type.hint = "Select " + "${Pref.beatText}" + " Type"
@@ -970,6 +1010,12 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
                             else {
                                 workTypeId = workTypeList[i].ID.toString()
                                 tv_work_type.text = workTypeList[i].Descrpton
+
+                                if(Pref.IsJointVisitEnable){
+                                    card_root_joint_visit_check.visibility=View.VISIBLE
+                                }else{
+                                    card_root_joint_visit_check.visibility=View.GONE
+                                }
                             }
                         }
                     } else {
@@ -1682,7 +1728,58 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
                 else
                     (mContext as DashboardActivity).showSnackMessage(getString(R.string.no_date_found))
             }
+
+            R.id.card_root_joint_team_sel,R.id.tv_frag_attend_team_member ->{
+                getTeamList()
+            }
+
         }
+    }
+
+    private fun getTeamList() {
+        if (!AppUtils.isOnline(mContext)) {
+            (mContext as DashboardActivity).showSnackMessage(getString(R.string.no_internet))
+            return
+        }
+        progress_wheel.spin()
+
+        val repository = TeamRepoProvider.teamRepoProvider()
+        BaseActivity.compositeDisposable.add(
+            repository.teamList(Pref.user_id!!, if(Pref.IsShowAllEmployeeforJointVisit) true else false, if(Pref.IsShowAllEmployeeforJointVisit) true else false)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe({ result ->
+                    val response = result as TeamListResponseModel
+                    XLog.d("GET TEAM DATA : " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
+                    if (response.status == NetworkConstant.SUCCESS) {
+                        progress_wheel.stopSpinning()
+                        if (response.member_list != null && response.member_list!!.size > 0) {
+                            member_list = response.member_list!!
+                            loadSaleman()
+                        } else {
+                            (mContext as DashboardActivity).showSnackMessage(response.message!!)
+                        }
+                    } else {
+                        progress_wheel.stopSpinning()
+                        (mContext as DashboardActivity).showSnackMessage(response.message!!)
+                    }
+                }, { error ->
+                    XLog.d("GET TEAM DATA : " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
+                    error.printStackTrace()
+                    progress_wheel.stopSpinning()
+                    (mContext as DashboardActivity).showSnackMessage(getString(R.string.something_went_wrong))
+                })
+        )
+    }
+
+    private fun loadSaleman() {
+        MemberSalesmanListDialog.newInstance("Select Member",member_list!!){
+            tv_frag_attend_team_member.text=it.user_name
+            str_selUserName=it.user_name
+            Pref.JointVisitSelectedUserName=it.user_name.toString()
+            str_selUserID=it.user_id
+        }.show((mContext as DashboardActivity).supportFragmentManager, "")
+
     }
 
 
@@ -1855,39 +1952,63 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
 
     private fun visibilityCheck() {
         if (!isOnLeave) {
-            if (TextUtils.isEmpty(workTypeId))
+            if (TextUtils.isEmpty(workTypeId)){  // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
                 (mContext as DashboardActivity).showSnackMessage("Please select work type")
-            else if(TextUtils.isEmpty(mbeatId) && Pref.IsBeatRouteAvailableinAttendance && false)
-                if(Pref.IsDistributorSelectionRequiredinAttendance ){
-                    if(TextUtils.isEmpty(assignedToDDId)){
-                        openDialogPopup("Hi! (${Pref.user_name})","Please select ${Pref.ddText}")
-                    }else
-                        openDialogPopup("Hi! (${Pref.user_name})","Please select ${Pref.beatText} type")
-                }else
-                    openDialogPopup("Hi! (${Pref.user_name})","Please select ${Pref.beatText} type")
+                return // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
+            }
+             if (Pref.IsJointVisitEnable && TextUtils.isEmpty(tv_frag_attend_team_member.text.toString().trim())){ // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
+                (mContext as DashboardActivity).showSnackMessage("Please select team member")
+                 return // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
+             }
+            else if(TextUtils.isEmpty(mbeatId) && Pref.IsBeatRouteAvailableinAttendance && false){
+//             else if(TextUtils.isEmpty(mbeatId) && Pref.IsBeatRouteAvailableinAttendance ){
+                 if(Pref.IsDistributorSelectionRequiredinAttendance ){
+                     if(TextUtils.isEmpty(assignedToDDId)){
+                         openDialogPopup("Hi! (${Pref.user_name})","Please select ${Pref.ddText}")
+                     }else{
+                         openDialogPopup("Hi! (${Pref.user_name})","Please select ${Pref.beatText} type")
+                     }
+                 }else{// 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
+                     openDialogPopup("Hi! (${Pref.user_name})","Please select ${Pref.beatText} type")
+                 }
+             }
+
             else {
                 if (tv_work_type.text.contains("Field")) {
                     val list_ = AppDatabase.getDBInstance()?.routeDao()?.getAll()
                     if (list_ != null && list_.isNotEmpty()) {
-                        if (TextUtils.isEmpty(routeID))
+                        if (TextUtils.isEmpty(routeID)){
                             (mContext as DashboardActivity).showSnackMessage("Please select route")
-                        else
+                            return  // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
+                        }
+                        else{
                             checkStateValidation()
-                    } else
+                        }
+
+                    } else{// 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
                         checkStateValidation()
+                    }
                 } else {
                     checkStateValidation()
                 }
             }
         } else {
-            if (TextUtils.isEmpty(leaveId))
+            if (TextUtils.isEmpty(leaveId)){ // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
                 (mContext as DashboardActivity).showSnackMessage("Please select leave type")
-            else if (TextUtils.isEmpty(startDate) || TextUtils.isEmpty(endDate))
+                return  // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
+            }
+            else if (TextUtils.isEmpty(startDate) || TextUtils.isEmpty(endDate)) { // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
                 (mContext as DashboardActivity).showSnackMessage("Please select date range")
-            else if (Pref.willLeaveApprovalEnable && TextUtils.isEmpty(et_leave_reason_text.text.toString().trim()))
+                return // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
+            }
+            else if (Pref.willLeaveApprovalEnable && TextUtils.isEmpty(et_leave_reason_text.text.toString().trim())) { // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
                 (mContext as DashboardActivity).showSnackMessage("Please enter remarks")
-            else
+                return // 2.0 AddAttendanceFragment AppV 4.0.7 mantis 25674  work type checking strong
+                }
+            else{
                 checkNetworkConnectivity()
+            }
+
         }
     }
 
@@ -2250,6 +2371,7 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
         addAttendenceModel.work_long=Pref.current_longitude
 
         addAttendenceModel.beat_id="0"
+
 
         val repository = AddAttendenceRepoProvider.addAttendenceRepo()
         progress_wheel.spin()
@@ -2634,12 +2756,55 @@ class AddAttendanceFragment : Fragment(), View.OnClickListener, DatePickerDialog
 
             addAttendenceModel.beat_id =  if(Pref.IsBeatRouteAvailableinAttendance) Pref.SelectedBeatIDFromAttend else "0"
 
+
+//            addAttendenceModel.IsJointVisit = if(isJointVisitSel==true) "1" else "0"
+            addAttendenceModel.IsJointVisit = if(isJointVisitSel==true) isJointVisitSel.toString() else "false"
+            addAttendenceModel.JointVisitTeam_MemberName = str_selUserName
+            addAttendenceModel.JointVisitTeam_Member_User_ID =if(!str_selUserID.equals("")) str_selUserID else "0"
+            // 1.0 AddAttendanceFragment AppV 4.0.6 25615 mantis
+            checkDDwiseNearbyShopAvaliable()
+
+            addAttendenceModel.isDistributorwiseNearbyShopVisit = isDiswiseNearBYshopVisit
+
             doAttendanceViaApiOrPlanScreen()
 
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
+
+    // 1.0 AddAttendanceFragment AppV 4.0.6 25615 mantis
+    private fun checkDDwiseNearbyShopAvaliable() {
+        val currentLocation = Location("")
+        currentLocation.latitude = Pref.current_latitude.toDouble()
+        currentLocation.longitude = Pref.current_longitude.toDouble()
+        val allDDWiseShopList = AppDatabase.getDBInstance()!!.addShopEntryDao().getShopsAccordingToType("4")
+        val newDList = java.util.ArrayList<AddShopDBModelEntity>()
+        for (i in allDDWiseShopList.indices) {
+            newDList.add(allDDWiseShopList[i])
+        }
+        if (newDList != null && newDList.size > 0) {
+            for (i in 0 until newDList.size) {
+                val ddLat: Double = newDList[i].shopLat
+                val ddLong: Double = newDList[i].shopLong
+                if (ddLat != null && ddLong != null) {
+                    val ddLocation = Location("")
+                    ddLocation.latitude = ddLat
+                    ddLocation.longitude = ddLong
+                    //val isShopNearby = FTStorageUtils.checkShopPositionWithinRadious(location, shopLocation, LocationWizard.NEARBY_RADIUS)
+                    val isDDNearby = FTStorageUtils.checkShopPositionWithinRadious(currentLocation, ddLocation,Pref.DistributorGPSAccuracy.toInt())
+                    if (isDDNearby) {
+                        isDiswiseNearBYshopVisit = "Yes"
+                        break
+                    }
+
+                    }
+                }
+            }
+
+
+        }
+
 
     private fun doAttendanceViaApiOrPlanScreen() {
         if (!willShowUpdateDayPlan) {
