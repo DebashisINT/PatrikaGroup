@@ -34,7 +34,7 @@ import com.patrikagroup.features.shopdetail.presentation.model.addcollection.Add
 import com.patrikagroup.features.viewAllOrder.api.addorder.AddOrderRepoProvider
 import com.patrikagroup.features.viewAllOrder.model.AddOrderInputParamsModel
 import com.patrikagroup.features.viewAllOrder.model.AddOrderInputProductList
-import com.elvishew.xlog.XLog
+
 import com.pnikosis.materialishprogress.ProgressWheel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers

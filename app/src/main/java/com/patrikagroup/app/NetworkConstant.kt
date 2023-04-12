@@ -15,15 +15,15 @@ class NetworkConstant {
         //var BASE_URL = "http://fts.indusnettechnologies.com:8089/API/"
         //var ADD_SHOP_BASE_URL = "http://fts.indusnettechnologies.com:8089/"
 
-//       var BASE_URL = "http://fts.indusnettechnologies.com:7000/API/"
-//        var ADD_SHOP_BASE_URL = "http://fts.indusnettechnologies.com:7000/"
+       //var BASE_URL = "http://fts.indusnettechnologies.com:7064/API/"
+        //var ADD_SHOP_BASE_URL = "http://fts.indusnettechnologies.com:7064/"
 
        var BASE_URL = "http://fts.indusnettechnologies.com:7038/API/"
         var ADD_SHOP_BASE_URL = "http://fts.indusnettechnologies.com:7038/"
 
 
-//        var BASE_URL = "http://3.7.30.86:8072/API/"
-//        var ADD_SHOP_BASE_URL = "http://3.7.30.86:8072/"
+        //var BASE_URL = "http://3.7.30.86:8072/API/"
+        //var ADD_SHOP_BASE_URL = "http://3.7.30.86:8072/"
 
 
 //        var BASE_URL = "http://3.7.30.86:82/API/"// face test with suman

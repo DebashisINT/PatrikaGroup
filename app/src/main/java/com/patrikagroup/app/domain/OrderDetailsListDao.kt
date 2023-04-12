@@ -66,4 +66,13 @@ interface OrderDetailsListDao {
     @Query("select * from order_details_list where only_date=:only_date and shop_id=:shop_id ")
     fun getAllByOnlyDate(only_date:String,shop_id:String): List<OrderDetailsListEntity>
 
+
+    @Query("select SUM(amount) as total_order_value FROM "+AppConstant.ORDER_DETAILS_LIST_TABLE+" where only_date BETWEEN :dateOfmonth1stdate AND :currentDate")
+    fun getOrderValueMTD(dateOfmonth1stdate: String,currentDate:String): String
+
+    @Query("select count(*) as total_order_count FROM "+AppConstant.ORDER_DETAILS_LIST_TABLE+" where only_date BETWEEN :dateOfmonth1stdate AND :currentDate")
+    fun getOrderCountMTD(dateOfmonth1stdate: String,currentDate:String): String
+
+
+
 }

@@ -30,17 +30,19 @@ import com.patrikagroup.widgets.AppCustomTextView
 import com.downloader.Error
 import com.downloader.OnDownloadListener
 import com.downloader.PRDownloader
-import com.elvishew.xlog.XLog
+
 import com.pnikosis.materialishprogress.ProgressWheel
 import com.themechangeapp.pickimage.PermissionHelper
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import timber.log.Timber
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
 // Revision History
 // 1.0 MicroLearningListFragment saheli 24-02-2032 AppV 4.0.7 mantis 0025683
+// 2.0 MicroLearningListFragment AppV 4.0.7 Saheli    02/03/2023 Timber Log Implementation
 class MicroLearningListFragment : BaseFragment() {
 
     private lateinit var mContext: Context
@@ -82,15 +84,19 @@ class MicroLearningListFragment : BaseFragment() {
         (mContext as DashboardActivity).setSearchListener(object : SearchListener {
             override fun onSearchQueryListener(query: String) {
                 if (query.isBlank()) {
-                    if (rv_micro_learning_list.visibility == View.VISIBLE)
+                    if (rv_micro_learning_list.visibility == View.VISIBLE) {
                         microLearningAdapter?.refreshList(list!!)
-                    else if (rv_category_list.visibility == View.VISIBLE)
+                    }
+                    else if (rv_category_list.visibility == View.VISIBLE) {
                         categoryAdapter?.refreshList(categoryList)
+                    }
                 } else {
-                    if (rv_micro_learning_list.visibility == View.VISIBLE)
+                    if (rv_micro_learning_list.visibility == View.VISIBLE) {
                         microLearningAdapter?.filter?.filter(query)
-                    else if (rv_category_list.visibility == View.VISIBLE)
+                    }
+                    else if (rv_category_list.visibility == View.VISIBLE) {
                         categoryAdapter?.filter?.filter(query)
+                    }
                 }
             }
         })
@@ -245,7 +251,8 @@ class MicroLearningListFragment : BaseFragment() {
                         .subscribeOn(Schedulers.io())
                         .subscribe({ result ->
                             val response = result as MicroLearningResponseModel
-                            XLog.d("MICRO LEARNING LIST: " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
+//                            XLog.d("MICRO LEARNING LIST: " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
+                            Timber.d("MICRO LEARNING LIST: " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
 
                             if (response.status == NetworkConstant.SUCCESS) {
                                 /*Log.e("Learning", "==================Fetch Video duration for api call========================")
@@ -273,7 +280,8 @@ class MicroLearningListFragment : BaseFragment() {
 
                         }, { error ->
                             progress_wheel.stopSpinning()
-                            XLog.d("MICRO LEARNING LIST: " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
+//                            XLog.d("MICRO LEARNING LIST: " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
+                            Timber.d("MICRO LEARNING LIST: " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
                             error.printStackTrace()
                             (mContext as DashboardActivity).showSnackMessage(getString(R.string.something_went_wrong))
                         })
@@ -435,7 +443,8 @@ class MicroLearningListFragment : BaseFragment() {
                         .subscribeOn(Schedulers.io())
                         .subscribe({ result ->
                             val response = result as BaseResponse
-                            XLog.d("UPDATE DOWNLOAD STATUS: " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
+//                            XLog.d("UPDATE DOWNLOAD STATUS: " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
+                            Timber.d("UPDATE DOWNLOAD STATUS: " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
                             progress_wheel.stopSpinning()
 
                             if (response.status == NetworkConstant.SUCCESS) {
@@ -447,7 +456,8 @@ class MicroLearningListFragment : BaseFragment() {
 
                         }, { error ->
                             progress_wheel.stopSpinning()
-                            XLog.d("UPDATE DOWNLOAD STATUS: " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
+//                            XLog.d("UPDATE DOWNLOAD STATUS: " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
+                            Timber.d("UPDATE DOWNLOAD STATUS: " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
                             error.printStackTrace()
                             (mContext as DashboardActivity).showSnackMessage(getString(R.string.something_went_wrong))
                         })
@@ -567,7 +577,8 @@ class MicroLearningListFragment : BaseFragment() {
                         .subscribeOn(Schedulers.io())
                         .subscribe({ result ->
                             val response = result as BaseResponse
-                            XLog.d("UPDATE NOTE: " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
+//                            XLog.d("UPDATE NOTE: " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
+                            Timber.d("UPDATE NOTE: " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
                             progress_wheel.stopSpinning()
 
                             if (response.status == NetworkConstant.SUCCESS) {
@@ -581,7 +592,8 @@ class MicroLearningListFragment : BaseFragment() {
 
                         }, { error ->
                             progress_wheel.stopSpinning()
-                            XLog.d("UPDATE NOTE: " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
+//                            XLog.d("UPDATE NOTE: " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
+                            Timber.d("UPDATE NOTE: " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
                             error.printStackTrace()
                             it.note = note
                             showUpdateNoteDialog(it)

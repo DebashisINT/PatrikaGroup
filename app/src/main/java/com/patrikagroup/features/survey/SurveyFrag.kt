@@ -42,7 +42,7 @@ import com.patrikagroup.features.photoReg.api.GetUserListPhotoRegProvider
 import com.patrikagroup.features.photoReg.model.ImageResponse
 import com.patrikagroup.features.survey.api.SurveyDataProvider
 import com.patrikagroup.widgets.AppCustomTextView
-import com.elvishew.xlog.XLog
+
 import com.pnikosis.materialishprogress.ProgressWheel
 import com.themechangeapp.pickimage.PermissionHelper
 import io.reactivex.android.schedulers.AndroidSchedulers

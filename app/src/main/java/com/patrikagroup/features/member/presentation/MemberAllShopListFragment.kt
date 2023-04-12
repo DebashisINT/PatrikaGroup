@@ -20,7 +20,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.patrikagroup.CustomStatic
 import com.patrikagroup.MySingleton
-import com.elvishew.xlog.XLog
+
 import com.pnikosis.materialishprogress.ProgressWheel
 import com.patrikagroup.R
 import com.patrikagroup.app.*
@@ -46,6 +46,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONArray
 import org.json.JSONObject
+import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -126,8 +127,9 @@ class MemberAllShopListFragment : BaseFragment() {
                     val shopType = AppDatabase.getDBInstance()?.shopTypeDao()?.getSingleType(shop_list?.get(0)?.shop_type!!)
                     if (shopType != null && !TextUtils.isEmpty(shopType.shoptype_name)) {
                         tv_shop_count.text = "Total " + shopType.shoptype_name + "(s): " + shop_list?.size
-                    } else
+                    } else {
                         tv_shop_count.text = "Total " + Pref.shopText + "(s): " + shop_list?.size
+                    }
                 } else {
                     adapter?.filter?.filter(query)
                 }
@@ -234,7 +236,7 @@ class MemberAllShopListFragment : BaseFragment() {
                         .subscribeOn(Schedulers.io())
                         .subscribe({ result ->
                             val response = result as TeamShopListResponseModel
-                            XLog.d("GET TEAM SHOP DATA : " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
+                            Timber.d("GET TEAM SHOP DATA : " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
                             progress_wheel.stopSpinning()
                             if (response.status == NetworkConstant.SUCCESS) {
 
@@ -269,7 +271,7 @@ class MemberAllShopListFragment : BaseFragment() {
 
                         }, { error ->
                             progress_wheel.stopSpinning()
-                            XLog.d("GET TEAM SHOP DATA : " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
+                            Timber.d("GET TEAM SHOP DATA : " + "ERROR : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + error.localizedMessage)
                             error.printStackTrace()
                             (mContext as DashboardActivity).showSnackMessage(getString(R.string.something_went_wrong))
                             if (TextUtils.isEmpty(shopId))
@@ -296,17 +298,19 @@ class MemberAllShopListFragment : BaseFragment() {
         val shopType = AppDatabase.getDBInstance()?.shopTypeDao()?.getSingleType(shop_list[0].shop_type)
         if (shopType != null && !TextUtils.isEmpty(shopType.shoptype_name)) {
             tv_shop_count.text = "Total " + shopType.shoptype_name + "(s): " + shop_list.size
-        } else
+        } else {
             tv_shop_count.text = "Total " + Pref.shopText + "(s): " + shop_list.size
-
+        }
         if (!TextUtils.isEmpty(shopId)) {
             tv_shop_path.visibility = View.VISIBLE
 
             shopNameList.forEachIndexed { index, shopName ->
-                if (index == shopNameList.size - 1)
+                if (index == shopNameList.size - 1) {
                     tv_shop_path.text = shopName
-                else
+                }
+                else {
                     tv_shop_path.text = shopName + "-> "
+                }
             }
         } else
             tv_shop_path.visibility = View.GONE
@@ -322,11 +326,11 @@ class MemberAllShopListFragment : BaseFragment() {
                 if (AppUtils.mLocation!!.accuracy <= Pref.shopLocAccuracy.toFloat()) {
                     openAddressUpdateDialog(teamShop, AppUtils.mLocation!!)
                 } else {
-                    XLog.d("======Saved current location is inaccurate (Member Shop List)========")
+                    Timber.d("======Saved current location is inaccurate (Member Shop List)========")
                     getShopLatLong(teamShop)
                 }
             } else {
-                XLog.d("=====Saved current location is null (Member Shop List)======")
+                Timber.d("=====Saved current location is null (Member Shop List)======")
                 getShopLatLong(teamShop)
             }
 
@@ -334,12 +338,14 @@ class MemberAllShopListFragment : BaseFragment() {
             val shopType_ = AppDatabase.getDBInstance()?.shopTypeDao()?.getSingleType(shop_list[0].shop_type)
             if (shopType_ != null && !TextUtils.isEmpty(shopType_.shoptype_name)) {
                 tv_shop_count.text = "Total " + shopType_.shoptype_name + "(s): " + size
-            } else
+            } else {
                 tv_shop_count.text = "Total " + Pref.shopText + "(s): " + size
+            }
         },
             { teamShop: TeamShopListDataModel ->
-                if (!Pref.isAddAttendence)
+                if (!Pref.isAddAttendence) {
                     (mContext as DashboardActivity).checkToShowAddAttendanceAlert()
+                }
                 else if(Pref.IsAllowBreakageTrackingunderTeam) {
                     //CustomStatic.IsBreakageViewFromTeam = true
                     //(mContext as DashboardActivity).loadFragment(FragType.ShopDamageProductListFrag, true, teamShop.shop_id+"~"+userId)
@@ -349,8 +355,9 @@ class MemberAllShopListFragment : BaseFragment() {
 
             },
         { teamShop: TeamShopListDataModel ->
-            if (!Pref.isAddAttendence)
+            if (!Pref.isAddAttendence) {
                 (mContext as DashboardActivity).checkToShowAddAttendanceAlert()
+            }
             else if(Pref.IsNewQuotationfeatureOn) {
                 (mContext as DashboardActivity).loadFragment(FragType.ViewAllQuotListFragment, true, teamShop)
         }
@@ -430,8 +437,9 @@ class MemberAllShopListFragment : BaseFragment() {
                 if (AppUtils.isOnline(mContext)) {
                     if (mTeamShop is TeamShopListDataModel)
                         callShopAddressUpdateApi(mTeamShop)
-                } else
+                } else {
                     (mContext as DashboardActivity).showSnackMessage(getString(R.string.no_internet))
+                }
 
             }).show((mContext as DashboardActivity).supportFragmentManager, "UpdateShopAddressDialog")
 
@@ -464,8 +472,9 @@ class MemberAllShopListFragment : BaseFragment() {
                             if (response.status == NetworkConstant.SUCCESS) {
                                 (mContext as DashboardActivity).showSnackMessage(response.message!!)
                                 getTeamShopList()
-                            } else
+                            } else {
                                 (mContext as DashboardActivity).showSnackMessage(response.message!!)
+                            }
 
                         }, { error ->
                             error.printStackTrace()
@@ -481,17 +490,21 @@ class MemberAllShopListFragment : BaseFragment() {
 
         shopIdList.also {
             it.removeAt(it.size - 1)
-            shopId = if (it.size > 0)
+            shopId = if (it.size > 0) {
                 it[it.size - 1]
-            else
+            }
+            else {
                 ""
+            }
         }
 
         shopNameList.also {
-            if (it.size > 0)
+            if (it.size > 0) {
                 it[it.size - 1]
-            else
+            }
+            else {
                 it[0]
+            }
         }
 
         getTeamShopList()
@@ -512,7 +525,7 @@ class MemberAllShopListFragment : BaseFragment() {
                         }
 
                     }, { error ->
-                        XLog.d("Apply Leave Response ERROR=========> " + error.message)
+                        Timber.d("Apply Leave Response ERROR=========> " + error.message)
                         BaseActivity.isApiInitiated = false
                         progress_wheel.stopSpinning()
                         (mContext as DashboardActivity).showSnackMessage(getString(R.string.something_went_wrong))

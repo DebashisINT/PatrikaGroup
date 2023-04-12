@@ -25,12 +25,13 @@ import com.patrikagroup.features.chat.model.ChatUserDataModel
 import com.patrikagroup.features.chat.model.ChatUserResponseModel
 import com.patrikagroup.features.dashboard.presentation.DashboardActivity
 import com.patrikagroup.widgets.AppCustomTextView
-import com.elvishew.xlog.XLog
+
 import com.github.clans.fab.FloatingActionButton
 import com.github.clans.fab.FloatingActionMenu
 import com.pnikosis.materialishprogress.ProgressWheel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import timber.log.Timber
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
@@ -127,8 +128,9 @@ class ChatUserListFragment : BaseFragment(), View.OnClickListener {
             if (i == 0) {
                 programFab1.setImageResource(R.drawable.ic_tick_float_icon)
                 programFab1.colorNormal = mContext.resources.getColor(R.color.delivery_status_green)
-            } else if (i == 1)
+            } else if (i == 1) {
                 programFab2.setImageResource(R.drawable.ic_tick_float_icon_gray)
+            }
         }
     }
 
@@ -203,7 +205,7 @@ class ChatUserListFragment : BaseFragment(), View.OnClickListener {
                         .subscribeOn(Schedulers.io())
                         .subscribe({ result ->
                             val response = result as ChatUserResponseModel
-                            XLog.d("Get Chat User List STATUS: " + response.status)
+                            Timber.d("Get Chat User List STATUS: " + response.status)
                             if (response.status == NetworkConstant.SUCCESS) {
                                 progress_wheel.stopSpinning()
                                 tv_no_data.visibility = View.GONE
@@ -219,7 +221,7 @@ class ChatUserListFragment : BaseFragment(), View.OnClickListener {
                             error.printStackTrace()
                             progress_wheel.stopSpinning()
                             if (error != null)
-                                XLog.d("Get Chat User List ERROR: " + error.localizedMessage)
+                                Timber.d("Get Chat User List ERROR: " + error.localizedMessage)
                             (mContext as DashboardActivity).showSnackMessage(getString(R.string.something_went_wrong))
                         })
         )
@@ -231,9 +233,9 @@ class ChatUserListFragment : BaseFragment(), View.OnClickListener {
                 val name = it.name.substring(0, it.name.indexOf("("))
                 (mContext as DashboardActivity).userName = name
             }
-            else
+            else {
                 (mContext as DashboardActivity).userName = it.name
-
+            }
             (mContext as DashboardActivity).isGrp = it.isGroup
             (mContext as DashboardActivity).grpId = it.id
             (mContext as DashboardActivity).loadFragment(FragType.ChatListFragment, true, it)

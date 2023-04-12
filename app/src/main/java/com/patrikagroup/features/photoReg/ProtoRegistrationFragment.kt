@@ -43,7 +43,10 @@ import com.patrikagroup.R
 import com.patrikagroup.app.*
 import com.patrikagroup.app.types.FragType
 import com.patrikagroup.app.uiaction.IntentActionable
-import com.patrikagroup.app.utils.*
+import com.patrikagroup.app.utils.AppUtils
+import com.patrikagroup.app.utils.FTStorageUtils
+import com.patrikagroup.app.utils.PermissionUtils
+import com.patrikagroup.app.utils.ProcessImageUtils_v1
 import com.patrikagroup.base.BaseResponse
 import com.patrikagroup.base.presentation.BaseActivity
 import com.patrikagroup.base.presentation.BaseFragment
@@ -60,15 +63,17 @@ import com.patrikagroup.widgets.AppCustomTextView
 import com.downloader.Error
 import com.downloader.OnDownloadListener
 import com.downloader.PRDownloader
-import com.elvishew.xlog.XLog
 import com.squareup.picasso.*
 import com.squareup.picasso.Picasso.RequestTransformer
 import com.themechangeapp.pickimage.PermissionHelper
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_photo_registration.*
+import lecho.lib.hellocharts.model.PieChartData
+import lecho.lib.hellocharts.model.SliceValue
+import lecho.lib.hellocharts.view.PieChartView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
@@ -121,6 +126,7 @@ class ProtoRegistrationFragment : BaseFragment(), View.OnClickListener {
         initView(view)
 
 
+
         (mContext as DashboardActivity).setSearchListener(object : SearchListener {
             override fun onSearchQueryListener(query: String) {
                 if (query.isBlank()) {
@@ -145,6 +151,23 @@ class ProtoRegistrationFragment : BaseFragment(), View.OnClickListener {
     }
 
     private fun initView(view: View) {
+
+        //extra code
+        /*var chart:PieChartView = view.findViewById(R.id.chart)
+        val pieData: ArrayList<SliceValue> = ArrayList()
+        pieData.add(SliceValue(15f, Color.BLUE).setLabel("A"))
+        pieData.add(SliceValue(25f, Color.GRAY).setLabel("B"))
+        pieData.add(SliceValue(10f, Color.RED).setLabel("C"))
+        pieData.add(SliceValue(60f, Color.MAGENTA).setLabel("D : 60%"))
+        val pieChartData = PieChartData(pieData)
+        pieChartData.setHasLabels(true)
+        pieChartData.valueLabelTextSize = 15
+        pieChartData.setHasCenterCircle(true)
+        pieChartData.centerText1 = "Center"
+        pieChartData.slicesSpacing = 5
+        chart.setPieChartData(pieChartData);*/
+
+
         et_attachment = view.findViewById(R.id.et_attachment)
         et_photo = view.findViewById(R.id.et_photo)
         mRv_userList = view.findViewById(R.id.rv_frag_photo_reg)
@@ -1303,7 +1326,7 @@ class ProtoRegistrationFragment : BaseFragment(), View.OnClickListener {
             newFile = processImage.ProcessImageSelfie()
             uiThread {
                 if (newFile != null) {
-                    XLog.e("=========Image from new technique==========")
+                    Timber.e("=========Image from new technique==========")
                     val fileSize = AppUtils.getCompressImage(filePath)
                     var tyy = filePath
 
@@ -1362,7 +1385,7 @@ class ProtoRegistrationFragment : BaseFragment(), View.OnClickListener {
 
              uiThread {
                  if (newFile != null) {
-                     XLog.e("=========Image from new technique==========")
+                     Timber.e("=========Image from new technique==========")
                      //reimbursementEditPic(newFile!!.length(), newFile?.absolutePath!!)
                  } else {
                      // Image compression

@@ -18,7 +18,7 @@ import com.patrikagroup.features.dashboard.presentation.DashboardActivity
 import com.patrikagroup.features.document.api.DocumentRepoProvider
 import com.patrikagroup.features.document.model.DocumentTypeResponseModel
 import com.patrikagroup.widgets.AppCustomTextView
-import com.elvishew.xlog.XLog
+
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.jetbrains.anko.doAsync

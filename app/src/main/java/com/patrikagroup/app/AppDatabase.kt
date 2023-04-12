@@ -63,7 +63,7 @@ import com.patrikagroup.features.login.*
         NewOrderGenderEntity::class, NewOrderProductEntity::class, NewOrderColorEntity::class, NewOrderSizeEntity::class, NewOrderScrOrderEntity::class, ProspectEntity::class,
         QuestionEntity::class, QuestionSubmitEntity::class, AddShopSecondaryImgEntity::class, ReturnDetailsEntity::class, ReturnProductListEntity::class, UserWiseLeaveListEntity::class, ShopFeedbackEntity::class, ShopFeedbackTempEntity::class, LeadActivityEntity::class,
         ShopDtlsTeamEntity::class, CollDtlsTeamEntity::class, BillDtlsTeamEntity::class, OrderDtlsTeamEntity::class,
-        TeamAllShopDBModelEntity::class, DistWiseOrderTblEntity::class, NewGpsStatusEntity::class,ShopExtraContactEntity::class),
+        TeamAllShopDBModelEntity::class, DistWiseOrderTblEntity::class, NewGpsStatusEntity::class,ShopExtraContactEntity::class,ProductOnlineRateTempEntity::class),
         version = 3, exportSchema = false)
 @TypeConverters(DateConverter::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -200,6 +200,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun newGpsStatusDao(): NewGpsStatusDao
     abstract fun shopExtraContactDao(): ShopExtraContactDao
 
+    abstract fun productOnlineRateTempDao(): ProductOnlineRateTempDao
+
 
     companion object {
         var INSTANCE: AppDatabase? = null
@@ -238,21 +240,27 @@ abstract class AppDatabase : RoomDatabase() {
                 database.execSQL("alter table shop_detail ADD COLUMN ShopOwner_PAN TEXT")
             }
         }
+
         val MIGRATION_2_3: Migration = object : Migration(2, 3) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("alter table product_list ADD COLUMN product_mrp_show TEXT")
-                database.execSQL("alter table product_list ADD COLUMN product_discount_show TEXT")
+                database.execSQL("ALTER TABLE shop_detail ADD COLUMN shopStatusUpdate TEXT DEFAULT '1' ")
                 database.execSQL("alter table shop_activity ADD COLUMN isnewShop INTEGER NOT NULL DEFAULT 0")
-                database.execSQL("CREATE TABLE IF NOT EXISTS `shop_extra_contact` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `shop_id` TEXT, `contact_serial` TEXT, `contact_name` TEXT, `contact_number` TEXT, `contact_email` TEXT, `contact_doa` TEXT, `contact_dob` TEXT, `isUploaded` INTEGER NOT NULL)")
                 database.execSQL("alter table shop_activity ADD COLUMN multi_contact_name TEXT")
                 database.execSQL("alter table shop_activity ADD COLUMN multi_contact_number TEXT")
                 database.execSQL("alter table tbl_shop_deefback ADD COLUMN multi_contact_name TEXT")
                 database.execSQL("alter table tbl_shop_deefback ADD COLUMN multi_contact_number TEXT")
-                database.execSQL("ALTER TABLE shop_detail ADD COLUMN shopStatusUpdate TEXT DEFAULT '1' ")
                 database.execSQL("alter table order_product_list ADD COLUMN order_mrp TEXT")
                 database.execSQL("alter table order_product_list ADD COLUMN order_discount TEXT")
+                database.execSQL("create TABLE shop_extra_contact (id INTEGER NOT NULL PRIMARY KEY , shop_id TEXT , contact_serial TEXT, contact_name TEXT , contact_number TEXT , contact_email TEXT , contact_doa TEXT ,contact_dob TEXT , isUploaded INTEGER NOT NULL DEFAULT 0) ")
+                database.execSQL("create TABLE product_online_rate_temp_table  (id INTEGER NOT NULL PRIMARY KEY , product_id  TEXT , rate TEXT, stock_amount TEXT , stock_unit TEXT , isStockShow INTEGER NOT NULL DEFAULT 0 , isRateShow INTEGER NOT NULL DEFAULT 0) ")
             }
         }
-       }
+
+
+    }
+
+
 //}
+
+
 }

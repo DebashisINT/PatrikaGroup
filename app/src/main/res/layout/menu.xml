@@ -481,6 +481,22 @@
                     android:text="@string/history"
                     android:textColor="@color/lightest_gray"
                     android:textSize="@dimen/_12sdp" />
+                <!--Performace Menu In Menu bar 24-03-2023 by saheli-->
+
+                <com.patrikagroup.widgets.AppCustomTextView
+                    android:id="@+id/tv_performance_teamMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/ic_performance"
+                    android:drawablePadding="@dimen/_15sdp"
+                    android:paddingLeft="@dimen/_17sdp"
+                    android:paddingTop="@dimen/_15sdp"
+                    android:paddingRight="@dimen/_17sdp"
+                    android:paddingBottom="@dimen/_7sdp"
+                    android:text="Performance"
+                    android:textColor="@color/lightest_gray"
+                    android:textSize="@dimen/_12sdp"
+                    android:visibility="gone" />
 
                 <com.patrikagroup.widgets.AppCustomTextView
                     android:id="@+id/quo_TV"
@@ -1159,6 +1175,23 @@
                     android:textSize="@dimen/_12sdp"
                     android:visibility="gone" />
 
+                <!--mantis 0025783 In-app privacy policy working in menu & Login -->
+
+                <com.patrikagroup.widgets.AppCustomTextView
+                    android:id="@+id/privacy_policy_tv_menu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="@dimen/_15sdp"
+                    android:drawableStart="@drawable/ic_party_status"
+                    android:drawableTint="@color/white"
+                    android:paddingBottom="@dimen/_7sdp"
+                    android:paddingLeft="@dimen/_17sdp"
+                    android:paddingRight="@dimen/_17sdp"
+                    android:paddingTop="@dimen/_15sdp"
+                    android:text="Privacy policy"
+                    android:textColor="@color/lightest_gray"
+                    android:textSize="@dimen/_12sdp" />
+
                 <com.patrikagroup.widgets.AppCustomTextView
                     android:id="@+id/logout_TV"
                     android:layout_width="match_parent"
@@ -1173,6 +1206,7 @@
                     android:textColor="@color/lightest_gray"
                     android:textSize="@dimen/_12sdp" />
 
+
                 <com.patrikagroup.widgets.AppCustomTextView
                     android:id="@+id/version_name_TV"
                     android:layout_width="wrap_content"
@@ -1185,6 +1219,8 @@
                     android:textColor="@color/color_custom_red"
                     android:textStyle="bold"
                     android:textSize="@dimen/_12sdp" />
+
+
 
             </LinearLayout>
 

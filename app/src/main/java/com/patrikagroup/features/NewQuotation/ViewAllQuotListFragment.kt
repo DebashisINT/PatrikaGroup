@@ -17,7 +17,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
@@ -351,12 +350,13 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
     // 2.0 ViewAllQuotListFragment  AppV 4.0.6 Pdf template function modification work
     @SuppressLint("UseRequireInsteadOfGet")
     private fun saveDataAsPdfN(addQuotEditResult: ViewDetailsQuotResponse,pdfTtemplateName : String) {
-        var document: Document = Document(PageSize.A4, 36f, 36f, 36f, 60f)
+        var document: Document = Document(PageSize.A4, 36f, 36f, 36f, 80f)
+
         val time = System.currentTimeMillis()
         //val fileName = "QUTO_" +  "_" + time
         var fileName = addQuotEditResult.quotation_number!!.toUpperCase() +  "_" + time
         fileName=fileName.replace("/", "_")
-        val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()+"/eurobondApp/QUTO/"
+        val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()+"/FSMApp/QUTO/"
 
         val dir = File(path)
         if (!dir.exists()) {
@@ -366,7 +366,13 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
         try{
             progress_wheel.spin()
             var pdfWriter :PdfWriter = PdfWriter.getInstance(document, FileOutputStream(path + fileName + ".pdf"))
-            val event = HeaderFooterPageEvent()
+            // 1.0 HeaderFooterPageEvent  AppV 4.0.7  Suman 27/02/2023 footer image with text mantis 25705
+            val event = HeaderFooterPageEvent(if(Pref.IsShowQuotationFooterforEurobond){
+                "EURO PANEL PRODUCTS LIMITED"
+            }else{
+                getString(R.string.app_name)
+            },addQuotEditResult.salesman_name.toString(),addQuotEditResult.salesman_designation.toString(),addQuotEditResult.salesman_login_id.toString(),
+                addQuotEditResult.salesman_email.toString())
             pdfWriter.setPageEvent(event)
 
             //PdfWriter.getInstance(document, FileOutputStream(path + fileName + ".pdf"))
@@ -383,22 +389,22 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
 
             //image add
             val bm: Bitmap = BitmapFactory.decodeResource(resources, R.drawable.breezelogo)
-            val bitmap = Bitmap.createScaledBitmap(bm, 220, 90, true);
+            val bitmap = Bitmap.createScaledBitmap(bm, 200, 80, true);
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
             var img: Image? = null
             val byteArray: ByteArray = stream.toByteArray()
             try {
                 img = Image.getInstance(byteArray)
-                img.scaleToFit(155f,90f)
-                img.scalePercent(70f)
+                //img.scaleToFit(155f,90f)
+                img.scalePercent(50f)
                 img.alignment=Image.ALIGN_RIGHT
             } catch (e: BadElementException) {
                 e.printStackTrace()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-            document.add(img)
+            //document.add(img)
 
 
             //var quotDate = AppUtils.getFormatedDateNew(addQuotEditResult.quotation_date_selection!!.replace("12:00:00 AM",""),"mm-dd-yyyy","dd-mm-yyyy")
@@ -409,6 +415,9 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
             dateLine.spacingAfter = 5f
             document.add(dateLine)*/
 
+            val sp1 = Paragraph("", font)
+            sp1.spacingAfter = 10f
+            document.add(sp1)
 
             val para = Paragraph()
             val glue = Chunk(VerticalPositionMark())
@@ -417,7 +426,7 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
             ph1.add(Chunk("DATE: " + addQuotEditResult.quotation_date_selection!!, font))
             ph1.add(glue) // Here I add special chunk to the same phrase.
 
-            ph1.add(Chunk(addQuotEditResult.quotation_number + "                         ", font))
+            ph1.add(Chunk(addQuotEditResult.quotation_number + "       ", font))
             para.add(ph1)
             document.add(para)
 
@@ -571,6 +580,7 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
             tableHeader.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER)
             tableHeader.setWidthPercentage(100f)
 
+
             val cell1 = PdfPCell(Phrase("Sr.No",font1Big))
             cell1.setHorizontalAlignment(Element.ALIGN_CENTER);
             tableHeader.addCell(cell1);
@@ -663,7 +673,6 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
                 cellBodySqFt.verticalAlignment = Element.ALIGN_MIDDLE
                 tableRows.addCell(cellBodySqFt)
 
-
                 document.add(tableRows)
 
                 document.add(Paragraph())
@@ -728,6 +737,8 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
             end.spacingAfter = 4f
             document.add(end)
 
+
+
             val thanks = Paragraph("\nThanks & Regards,", fontB1)
             thanks.alignment = Element.ALIGN_LEFT
             thanks.spacingAfter = 4f
@@ -762,12 +773,12 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
 
             val salesmanemail = Paragraph("Email : "+addQuotEditResult.salesman_email, fontB1)
             salesmanemail.alignment = Element.ALIGN_LEFT
-            salesmanemail.spacingAfter =  2f
+            salesmanemail.spacingAfter =  1f
             document.add(salesmanemail)
 
             val xxxx = Paragraph("", font)
             xxxx.spacingAfter = 4f
-            document.add(xxxx)
+            //document.add(xxxx)
 
             // Hardcoded for EuroBond
             var euroHead = Paragraph()
@@ -907,16 +918,18 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
                     (mContext as DashboardActivity).showSnackMessage(getString(R.string.something_went_wrong))
                 }
             }*/
-
             // Hardcoded for EuroBon
+
             var m = Mail()
             var toArr = arrayOf("")
+
             if(Pref.IsShowQuotationFooterforEurobond){
                 m = Mail("eurobondacp02@gmail.com", "nuqfrpmdjyckkukl")
                 toArr = arrayOf("sales1@eurobondacp.com", "sales@eurobondacp.com")
             }else{
-                m = Mail("saheli.bhattacharjee@indusnet.co.in", "@Intsaheli22")
-                toArr = arrayOf("saheli.bhattacharjee@indusnet.co.in","suman.bachar@indusnet.co.in")
+                //m = Mail("saheli.bhattacharjee@indusnet.co.in", "@Intsaheli22")
+                m = Mail("suman.bachar@indusnet.co.in", "dqridqtwsqxatmyt")
+                toArr = arrayOf("saheli.bhattacharjee@indusnet.co.in","suman.bachar@indusnet.co.in","suman.roy@indusnet.co.in")
             }
 
             m.setTo(toArr)
@@ -924,8 +937,12 @@ class ViewAllQuotListFragment : BaseFragment(), View.OnClickListener {
             m.setSubject("Quotation for $shop_name created on dated ${addQuotEditResult.save_date_time!!.split(" ").get(0)}.")
             m.setBody("Hello Team,  \n Please find attached Quotation No. ${addQuotEditResult.quotation_number} Dated ${addQuotEditResult.save_date_time!!.split(" ").get(0)} for $shop_name \n\n\n Regards \n${Pref.user_name}.")
             doAsync {
-                val fileUrl = Uri.parse(sendingPath)
-                val i = m.send(fileUrl.path)
+                try{
+                    val fileUrl = Uri.parse(sendingPath)
+                    val i = m.send(fileUrl.path)
+                }catch (ex:Exception){
+                    ex.printStackTrace()
+                }
                 uiThread {
                     progress_wheel.stopSpinning()
                     openDialogPopup("Hi ${Pref.user_name} !","Email was sent successfully.")

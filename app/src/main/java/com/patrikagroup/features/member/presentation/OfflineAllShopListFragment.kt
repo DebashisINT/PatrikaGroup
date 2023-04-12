@@ -30,12 +30,13 @@ import com.patrikagroup.features.member.model.TeamShopListResponseModel
 import com.patrikagroup.features.nearbyshops.api.updateaddress.ShopAddressUpdateRepoProvider
 import com.patrikagroup.features.nearbyshops.model.updateaddress.AddressUpdateRequest
 import com.patrikagroup.widgets.AppCustomTextView
-import com.elvishew.xlog.XLog
+
 import com.pnikosis.materialishprogress.ProgressWheel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -402,11 +403,11 @@ class OfflineAllShopListFragment : BaseFragment() {
                     if (AppUtils.mLocation!!.accuracy <= Pref.shopLocAccuracy.toFloat()) {
                         openAddressUpdateDialog(teamShop, AppUtils.mLocation!!)
                     } else {
-                        XLog.d("======Saved current location is inaccurate (Offline Member Shop List)========")
+                        Timber.d("======Saved current location is inaccurate (Offline Member Shop List)========")
                         getShopLatLong(teamShop)
                     }
                 } else {
-                    XLog.d("=====Saved current location is null (Offline Member Shop List)======")
+                    Timber.d("=====Saved current location is null (Offline Member Shop List)======")
                     getShopLatLong(teamShop)
                 }
 
@@ -519,15 +520,15 @@ class OfflineAllShopListFragment : BaseFragment() {
             pincode = team.shop_pincode
         }
 
-        XLog.d("==============Sync Team Shop Input Params (Offline Shop)====================")
-        XLog.d("shop id=======> " + addressUpdateReq.shop_id)
-        XLog.d("user_id=======> " + addressUpdateReq.user_id)
-        XLog.d("shop_lat=======> " + addressUpdateReq.shop_lat)
-        XLog.d("shop_long=======> " + addressUpdateReq.shop_long)
-        XLog.d("shop_address=======> " + addressUpdateReq.shop_address)
-        XLog.d("shop_pincode=======> " + addressUpdateReq.pincode)
-        XLog.d("isAddressUpdated=======> " + addressUpdateReq.isAddressUpdated)
-        XLog.d("=============================================================================")
+        Timber.d("==============Sync Team Shop Input Params (Offline Shop)====================")
+        Timber.d("shop id=======> " + addressUpdateReq.shop_id)
+        Timber.d("user_id=======> " + addressUpdateReq.user_id)
+        Timber.d("shop_lat=======> " + addressUpdateReq.shop_lat)
+        Timber.d("shop_long=======> " + addressUpdateReq.shop_long)
+        Timber.d("shop_address=======> " + addressUpdateReq.shop_address)
+        Timber.d("shop_pincode=======> " + addressUpdateReq.pincode)
+        Timber.d("isAddressUpdated=======> " + addressUpdateReq.isAddressUpdated)
+        Timber.d("=============================================================================")
 
 
         BaseActivity.compositeDisposable.add(

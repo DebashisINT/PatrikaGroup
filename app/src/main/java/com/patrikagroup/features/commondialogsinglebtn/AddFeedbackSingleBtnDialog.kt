@@ -49,7 +49,7 @@ import com.patrikagroup.features.nearbyshops.api.ShopListRepositoryProvider
 import com.patrikagroup.features.nearbyshops.model.ProsListResponseModel
 import com.patrikagroup.widgets.AppCustomEditText
 import com.patrikagroup.widgets.AppCustomTextView
-import com.elvishew.xlog.XLog
+
 import com.google.android.material.textfield.TextInputLayout
 import com.squareup.picasso.Picasso
 import com.themechangeapp.pickimage.PermissionHelper
@@ -60,6 +60,7 @@ import kotlinx.android.synthetic.main.dialog_add_feedback_single_btn.*
 import kotlinx.android.synthetic.main.fragment_add_shop.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import timber.log.Timber
 import java.io.File
 import java.util.*
 
@@ -70,6 +71,7 @@ import java.util.*
 // 2.0  AppV 4.0.6  AddFeedbackSingleBtnDialog  Suman 20/01/2023 contact person selection mandatory if IsContactPersonSelectionRequiredinRevisit is true
 // 3.0  AppV 4.0.7  AddFeedbackSingleBtnDialog  Saheli    07/01/2023 mantis 25649 add feedback using  voice
 // 4.0  AppV 4.0.7  AddFeedbackSingleBtnDialog  Saheli    13/01/2023 mantis 25649 add feedback using  voice plus text handle
+// 5.0  AppV 4.0.7  AddFeedbackSingleBtnDialog  Saheli    22/01/2023 mantis 25649 modified due to UI problem
 
 class AddFeedbackSingleBtnDialog : DialogFragment(), View.OnClickListener {
 
@@ -217,6 +219,7 @@ class AddFeedbackSingleBtnDialog : DialogFragment(), View.OnClickListener {
         if (Pref.isShowVisitRemarks) {
             rl_remarks.visibility = View.VISIBLE
             til_feedback.visibility = View.GONE
+            iv_dialog_add_feedback_mic.visibility = View.GONE //5.0  AppV 4.0.7  AddFeedbackSingleBtnDialog mantis 25649 modified due to UI problem
         }
         else {
             rl_remarks.visibility = View.GONE
@@ -615,7 +618,7 @@ class AddFeedbackSingleBtnDialog : DialogFragment(), View.OnClickListener {
                                 .subscribeOn(Schedulers.io())
                                 .subscribe({ result ->
                                     val response = result as ProsListResponseModel
-                                    XLog.d("GET PROS DATA : " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
+                                    Timber.d("GET PROS DATA : " + "RESPONSE : " + response.status + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name + ",MESSAGE : " + response.message)
                                     if (response.status == NetworkConstant.SUCCESS) {
                                         if (response.Prospect_list != null && response.Prospect_list!!.isNotEmpty()) {
                                             doAsync {

@@ -7,6 +7,7 @@ import com.patrikagroup.base.BaseResponse
  */
 //Revision History
 // 1.0 ConfigFetchResponseModel AppV 4.0.6  Saheli    25/01/2023  mantis 25623
+// 2.0 ConfigFetchResponseModel AppV 4.0.8  Saheli    06/04/2023  mantis 0025780
 class ConfigFetchResponseModel : BaseResponse() {
     var min_accuracy: String? = "200"
     var max_accuracy: String? = "1500"
@@ -127,7 +128,10 @@ class ConfigFetchResponseModel : BaseResponse() {
     var IsShowQuotationFooterforEurobond:Boolean?=null
     var IsShowOtherInfoinShopMaster:Boolean?=null
 
+    var IsAllowZeroRateOrder: Boolean? = null
 
+    var ShowApproxDistanceInNearbyShopList: Boolean? = null
+    var IsAssignedDDAvailableForAllUser: Boolean? = null// mantis 0025780
 
 
 

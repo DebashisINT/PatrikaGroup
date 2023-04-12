@@ -11,7 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
-import com.elvishew.xlog.XLog
+
 import com.patrikagroup.R
 import com.patrikagroup.app.MaterialSearchView
 import com.patrikagroup.app.NetworkConstant
@@ -27,6 +27,7 @@ import com.patrikagroup.widgets.AppCustomTextView
 import com.pnikosis.materialishprogress.ProgressWheel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -153,7 +154,7 @@ class AllShopListFragment : BaseFragment() {
 
                             val planListResponse = result as AllPlanListResponseModel
 
-                            XLog.d("AllPlanList RESPONSE=======> " + planListResponse.status)
+                            Timber.d("AllPlanList RESPONSE=======> " + planListResponse.status)
 
                             if (planListResponse.status == NetworkConstant.SUCCESS) {
                                 if (planListResponse.plan_data != null && planListResponse.plan_data!!.size > 0) {
@@ -177,7 +178,7 @@ class AllShopListFragment : BaseFragment() {
                             progress_wheel.stopSpinning()
                             tv_no_data.visibility = View.VISIBLE
                             (mContext as DashboardActivity).showSnackMessage(getString(R.string.something_went_wrong))
-                            XLog.d("AllPlanList ERROR=======> " + error.localizedMessage)
+                            Timber.d("AllPlanList ERROR=======> " + error.localizedMessage)
                         })
         )
     }
