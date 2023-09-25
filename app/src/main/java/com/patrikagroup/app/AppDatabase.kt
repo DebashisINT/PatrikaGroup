@@ -15,6 +15,8 @@ import com.patrikagroup.features.lead.model.LeadActivityEntity
 import com.patrikagroup.features.location.UserLocationDataDao
 import com.patrikagroup.features.location.UserLocationDataEntity
 import com.patrikagroup.features.login.*
+import com.patrikagroup.features.taskManagement.model.TaskManagementDao
+import com.patrikagroup.features.taskManagement.model.TaskManagmentEntity
 
 
 /*
@@ -63,8 +65,9 @@ import com.patrikagroup.features.login.*
         NewOrderGenderEntity::class, NewOrderProductEntity::class, NewOrderColorEntity::class, NewOrderSizeEntity::class, NewOrderScrOrderEntity::class, ProspectEntity::class,
         QuestionEntity::class, QuestionSubmitEntity::class, AddShopSecondaryImgEntity::class, ReturnDetailsEntity::class, ReturnProductListEntity::class, UserWiseLeaveListEntity::class, ShopFeedbackEntity::class, ShopFeedbackTempEntity::class, LeadActivityEntity::class,
         ShopDtlsTeamEntity::class, CollDtlsTeamEntity::class, BillDtlsTeamEntity::class, OrderDtlsTeamEntity::class,
-        TeamAllShopDBModelEntity::class, DistWiseOrderTblEntity::class, NewGpsStatusEntity::class,ShopExtraContactEntity::class,ProductOnlineRateTempEntity::class),
-        version = 3, exportSchema = false)
+        TeamAllShopDBModelEntity::class, DistWiseOrderTblEntity::class, NewGpsStatusEntity::class,ShopExtraContactEntity::class,ProductOnlineRateTempEntity::class, TaskManagmentEntity::class,
+    VisitRevisitWhatsappStatus::class),
+        version = 4, exportSchema = false)
 @TypeConverters(DateConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun addShopEntryDao(): AddShopDao
@@ -203,6 +206,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun productOnlineRateTempDao(): ProductOnlineRateTempDao
 
 
+    abstract fun taskManagementDao(): TaskManagementDao
+    abstract fun visitRevisitWhatsappStatusDao(): VisitRevisitWhatsappStatusDao
+
+
     companion object {
         var INSTANCE: AppDatabase? = null
 
@@ -212,7 +219,7 @@ abstract class AppDatabase : RoomDatabase() {
                         // allow queries on the main thread.
                         // Don't do this on a real app! See PersistenceBasicSample for an example.
                         .allowMainThreadQueries()
-                        .addMigrations(MIGRATION_1_2,MIGRATION_2_3)
+                        .addMigrations( MIGRATION_1_2,MIGRATION_2_3 ,MIGRATION_3_4)
 //                        .fallbackToDestructiveMigration()
                         .build()
             }
@@ -253,6 +260,18 @@ abstract class AppDatabase : RoomDatabase() {
                 database.execSQL("alter table order_product_list ADD COLUMN order_discount TEXT")
                 database.execSQL("create TABLE shop_extra_contact (id INTEGER NOT NULL PRIMARY KEY , shop_id TEXT , contact_serial TEXT, contact_name TEXT , contact_number TEXT , contact_email TEXT , contact_doa TEXT ,contact_dob TEXT , isUploaded INTEGER NOT NULL DEFAULT 0) ")
                 database.execSQL("create TABLE product_online_rate_temp_table  (id INTEGER NOT NULL PRIMARY KEY , product_id  TEXT , rate TEXT, stock_amount TEXT , stock_unit TEXT , isStockShow INTEGER NOT NULL DEFAULT 0 , isRateShow INTEGER NOT NULL DEFAULT 0) ")
+            }
+        }
+
+        val MIGRATION_3_4: Migration = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE shop_visit_revisit_whatsapp_status (sl_no INTEGER NOT NULL PRIMARY KEY, shop_id TEXT NOT NULL, shop_name TEXT NOT NULL, contactNo TEXT NOT NULL, " +        "isNewShop INTEGER NOT NULL , " +        "date TEXT NOT NULL, time TEXT NOT NULL,isWhatsappSent INTEGER NOT NULL ,whatsappSentMsg TEXT NOT NULL,isUploaded INTEGER NOT NULL,transactionId TEXT NOT NULL  )")
+
+                database.execSQL("alter table product_online_rate_temp_table ADD COLUMN Qty_per_Unit REAL")
+                database.execSQL("alter table product_online_rate_temp_table ADD COLUMN Scheme_Qty REAL")
+                database.execSQL("alter table product_online_rate_temp_table ADD COLUMN Effective_Rate REAL")
+
+
             }
         }
 

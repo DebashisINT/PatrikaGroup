@@ -1,9 +1,12 @@
 package com.patrikagroup.features.logoutsync.presentation
 
 import android.app.ActivityManager
+import android.app.Dialog
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.*
 import androidx.annotation.RequiresApi
@@ -20,6 +23,9 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.FileProvider
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
 import com.patrikagroup.CustomConstants
 
 
@@ -89,12 +95,14 @@ import com.patrikagroup.features.viewAllOrder.model.AddOrderInputProductList
 import com.patrikagroup.mappackage.SendBrod
 import com.patrikagroup.widgets.AppCustomTextView
 import com.patrikagroup.MonitorService
+import com.patrikagroup.MySingleton
 import com.patrikagroup.features.addshop.model.*
 import com.patrikagroup.features.addshop.model.assigntopplist.AddShopUploadImg
 import com.patrikagroup.features.addshop.presentation.ShopExtraContactReq
 import com.patrikagroup.features.addshop.presentation.multiContactRequestData
 import com.patrikagroup.features.login.api.LoginRepositoryProvider
 import com.patrikagroup.features.login.model.GetConcurrentUserResponse
+import com.patrikagroup.features.login.model.WhatsappApiData
 import com.patrikagroup.features.performance.model.Gps_status_list
 import com.patrikagroup.features.performance.model.UpdateGpsInputListParamsModel
 import com.patrikagroup.features.returnsOrder.ReturnProductList
@@ -104,9 +112,15 @@ import com.patrikagroup.features.viewAllOrder.orderNew.NewOrderScrActiFragment
 import com.patrikagroup.features.viewAllOrder.orderNew.NeworderScrCartFragment
 import com.facebook.stetho.common.LogUtil
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.gson.JsonParser
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_login_new.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
@@ -124,6 +138,7 @@ import kotlin.collections.ArrayList
 // 1.0 LogoutSyncFragment AppV 4.0.6 suman 12-01-2023 multiple contact updation
 // 2.0 LogoutSyncFragment AppV 4.0.6 saheli 20-01-2023  Shop duartion Issue mantis 25597
 // 3.0 LogoutSyncFragment AppV 4.0.7 saheli 21-01-2023  mantis 0025685
+//4.0 LogoutSyncFragment AppV 4.1.3 saheli 03-05-2023  mantis 0026013
 class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
 
     private lateinit var mContext: Context
@@ -1299,8 +1314,12 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
         addShopData.actual_address = mAddShopDBModelEntity.actual_address
 
 
-        var uniqKeyObj=AppDatabase.getDBInstance()!!.shopActivityDao().getNewShopActivityKey(mAddShopDBModelEntity.shop_id,false)
-        addShopData.shop_revisit_uniqKey=uniqKeyObj?.shop_revisit_uniqKey!!
+        try{
+            var uniqKeyObj=AppDatabase.getDBInstance()!!.shopActivityDao().getNewShopActivityKey(mAddShopDBModelEntity.shop_id,false)
+            addShopData.shop_revisit_uniqKey=uniqKeyObj?.shop_revisit_uniqKey!!
+        }catch (ex:Exception){
+            addShopData.shop_revisit_uniqKey= ""
+        }
 
         if (!TextUtils.isEmpty(mAddShopDBModelEntity.agency_name)) {
             addShopData.agency_name = mAddShopDBModelEntity.agency_name
@@ -1767,6 +1786,11 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
             shopDurationData.multi_contact_name = shopActivity.multi_contact_name
             shopDurationData.multi_contact_number = shopActivity.multi_contact_number
 
+            //Begin Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+            shopDurationData.distFromProfileAddrKms = shopActivity.distFromProfileAddrKms
+            shopDurationData.stationCode = shopActivity.stationCode
+            //End of Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+
             shopDataList.add(shopDurationData)
         }
         else {
@@ -1874,6 +1898,11 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
 
                 shopDurationData.multi_contact_name = shopActivity.multi_contact_name
                 shopDurationData.multi_contact_number = shopActivity.multi_contact_number
+
+                //Begin Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+                shopDurationData.distFromProfileAddrKms = shopActivity.distFromProfileAddrKms
+                shopDurationData.stationCode = shopActivity.stationCode
+                //End of Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
 
                 shopDataList.add(shopDurationData)
             }
@@ -2899,11 +2928,14 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
                 .subscribeOn(Schedulers.io())
                 .subscribe({ result ->
                     val gpsStatusResponse = result as BaseResponse
-                    Timber.d("SYNC GPS : " + "RESPONSE : " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name
+                    Timber.d("SYNC GPS : " + "RESPONSE : ${gpsStatusResponse.status} " + "\n" + "Time : " + AppUtils.getCurrentDateTime() + ", USER :" + Pref.user_name
                             + ",MESSAGE : " + gpsStatusResponse.message)
                     if (gpsStatusResponse.status == NetworkConstant.SUCCESS) {
-                        AppDatabase.getDBInstance()!!.gpsStatusDao().updateIsUploadedAccordingToId(true, list[i].id)
-
+                        // 4.0 LogoutSyncFragment mantis v 4.0.8 saheli 03-05-2023 0026013 work
+                        for (i in 0 until list.size) {
+                            AppDatabase.getDBInstance()!!.gpsStatusDao().updateIsUploadedAccordingToId(true, list[i].id)
+                        }
+                        //4.0 end 0026013
 
 //                        i++
 //                        if (i < list.size) {
@@ -3457,6 +3489,11 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
                         shopDurationData.multi_contact_name = shopActivity.multi_contact_name
                         shopDurationData.multi_contact_number = shopActivity.multi_contact_number
 
+                        //Begin Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+                        shopDurationData.distFromProfileAddrKms = shopActivity.distFromProfileAddrKms
+                        shopDurationData.stationCode = shopActivity.stationCode
+                        //End of Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+
                         shopDataList.add(shopDurationData)
 
 
@@ -3562,6 +3599,10 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
                         //New shop Create issue
                         shopDurationData.isnewShop = it.isnewShop!!
 
+                        //Begin Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+                        shopDurationData.distFromProfileAddrKms = it.distFromProfileAddrKms
+                        shopDurationData.stationCode = it.stationCode
+                        //End of Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
 
                         shopDataList.add(shopDurationData)
 
@@ -6564,7 +6605,86 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
     }
     //===========================================================ADD ACTIVITY========================================================
 
-
+    val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    fun syncWhatsappStatus(){
+        if(Pref.IsShowWhatsAppIconforVisit || Pref.IsAutomatedWhatsAppSendforRevisit){
+            scope.launch {
+                println("tag_supr begin")
+                var whatsL = AppDatabase.getDBInstance()?.visitRevisitWhatsappStatusDao()!!.getUnsyncList() as ArrayList<VisitRevisitWhatsappStatus>
+                for(i in 0..whatsL.size-1){
+                    val stringRequest: StringRequest = object : StringRequest(
+                        Request.Method.POST, "https://theultimate.io/WAApi/report",
+                        Response.Listener<String?> { response ->
+                            var resp = JsonParser.parseString(response)
+                            var statusCode = resp.asJsonObject.get("code").toString()
+                            var data =  resp.asJsonObject.get("data")
+                            try{
+                                var f1 = data.asJsonObject
+                                var f2 = f1.asJsonObject.get("records")
+                                var f3 =f2.asJsonArray
+                                var status = f3.get(0).asJsonObject.get("status").toString().drop(1).dropLast(1)
+                                var cause = f3.get(0).asJsonObject.get("cause").toString().drop(1).dropLast(1)
+                                if(statusCode.equals("200",ignoreCase = true)){
+                                    if(status.equals("DELIVERED")){
+                                        var msg = if(cause.contains("Read By User",ignoreCase = true)) "Read by User" else "Sent Successfully"
+                                        AppDatabase.getDBInstance()?.visitRevisitWhatsappStatusDao()!!.updateWhatsStatus(true,msg,whatsL.get(i).sl_no,whatsL.get(i).transactionId)
+                                    }else{
+                                        AppDatabase.getDBInstance()?.visitRevisitWhatsappStatusDao()!!.updateWhatsStatus(false,status.toString(),whatsL.get(i).sl_no,whatsL.get(i).transactionId)
+                                    }
+                                }
+                            }catch (ex:Exception){
+                                ex.printStackTrace()
+                            }
+                        },
+                        Response.ErrorListener { error ->
+                            Timber.d("error in whatsapp report api ${error.message}")
+                        })
+                    {
+                        override fun getParams(): Map<String, String>? {
+                            val params: MutableMap<String, String> = HashMap()
+                            params.put("userId", "eurobondwa")
+                            params.put("password", "Eurobondwa@123")
+                            params.put("wabaNumber", "917888488891")
+                            params.put("fromDate", "${AppUtils.getCurrentDateForShopActi()}")
+                            params.put("toDate", "${AppUtils.getCurrentDateForShopActi()}")
+                            params.put("uuId", whatsL.get(i).transactionId.toString())
+                            return params
+                        }
+                    }
+                    MySingleton.getInstance(mContext.applicationContext)!!.addToRequestQueue(stringRequest)
+                    delay(450)
+                }
+            }.invokeOnCompletion {
+                println("tag_supr finish")
+                var obL =AppDatabase.getDBInstance()?.visitRevisitWhatsappStatusDao()!!.getUnsyncList() as ArrayList<VisitRevisitWhatsappStatus>
+                if(obL.size!= 0){
+                    var ob = WhatsappApiData(Pref.user_id.toString(),obL)
+                    val repository = EditShopRepoProvider.provideEditShopWithoutImageRepository()
+                    BaseActivity.compositeDisposable.add(
+                        repository.whatsAppStatusSync(ob)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribeOn(Schedulers.io())
+                            .subscribe({ result ->
+                                val addShopResult = result as BaseResponse
+                                if(addShopResult.status.equals("200")){
+                                    AppDatabase.getDBInstance()?.visitRevisitWhatsappStatusDao()!!.updateWhatsStatusUpload()
+                                    calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+                                }else{
+                                    calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+                                }
+                            }, { error ->
+                                error.printStackTrace()
+                                calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+                            })
+                    )
+                }else{
+                    calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+                }
+            }
+        }else{
+            calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+        }
+    }
 
     //===============================================Logout===========================================================================//
     private fun calllogoutApi(user_id: String, session_id: String) {
@@ -7358,7 +7478,8 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
 
     private fun callAppInfoApi() {
         if (!Pref.isAppInfoEnable) {
-            calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+            //calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+            syncWhatsappStatus()
             return
         }
 
@@ -7366,7 +7487,8 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
 
         if (unSyncData == null || unSyncData.isEmpty()) {
             Timber.e("=======Appinfo list is empty (Logout Sync)=========")
-            calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+            //calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+            syncWhatsappStatus()
             return
         }
 
@@ -7415,13 +7537,15 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
 
                                     uiThread {
                                         progress_wheel.stopSpinning()
-                                        calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+                                        //calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+                                        syncWhatsappStatus()
                                     }
                                 }
                             }
                             else {
                                 progress_wheel.stopSpinning()
-                                calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+                                //calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+                                syncWhatsappStatus()
                             }
 
                         }, { error ->
@@ -7429,7 +7553,8 @@ class LogoutSyncFragment : BaseFragment(), View.OnClickListener {
                             Timber.d("App Info : ERROR : " + error.localizedMessage)
                             error.printStackTrace()
                             progress_wheel.stopSpinning()
-                            calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+                            //calllogoutApi(Pref.user_id!!, Pref.session_token!!)
+                            syncWhatsappStatus()
                         })
         )
     }

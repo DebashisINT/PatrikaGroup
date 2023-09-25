@@ -52,6 +52,9 @@ public class CustomStatic {
 
     public static Boolean IsViewLeadFromInProcess=false;
     public static Boolean IsViewLeadAddUpdate=false;
+
+    public static Boolean IsViewTaskFromInProcess=false;
+    public static Boolean IsViewTaskAddUpdate=false;
     public static String ShopFeedBachHisUserId="";
 
     public static Boolean IsCollectionViewFromTeam = false;
@@ -75,5 +78,11 @@ public class CustomStatic {
     public static String TeamUserSelect_user_id = "";
 
     public static Boolean IsBackFromNewOptiCart = false;
+
+    public static String lead_msgBody = "";
+    public static String lead_msgLeadDate = "";
+    public static String lead_msgLeadEnquiry = "";
+
+    public static Boolean IsTeamAllParty = false;
 
 }

@@ -14,18 +14,15 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.provider.MediaStore.Images.Media.getBitmap
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
 import com.patrikagroup.R
-import com.patrikagroup.app.AppDatabase
 import com.patrikagroup.app.NetworkConstant
 import com.patrikagroup.app.Pref
 import com.patrikagroup.app.domain.AddShopDBModelEntity
@@ -36,15 +33,10 @@ import com.patrikagroup.base.BaseResponse
 import com.patrikagroup.base.presentation.BaseActivity
 import com.patrikagroup.base.presentation.BaseFragment
 import com.patrikagroup.features.addshop.api.AddShopRepositoryProvider
-import com.patrikagroup.features.addshop.model.assigntopplist.AddShopUploadImg
 import com.patrikagroup.features.addshop.model.assigntopplist.AddshopImageMultiReqbody1
 import com.patrikagroup.features.addshop.model.imageListResponse
-import com.patrikagroup.features.beatCustom.BeatGetStatusModel
-import com.patrikagroup.features.beatCustom.api.GetBeatRegProvider
 import com.patrikagroup.features.dashboard.presentation.DashboardActivity
-import com.patrikagroup.features.marketing.model.MarketingDetailImageData
 import com.patrikagroup.widgets.AppCustomTextView
-
 import com.pnikosis.materialishprogress.ProgressWheel
 import com.squareup.picasso.Cache
 import com.squareup.picasso.MemoryPolicy
@@ -392,6 +384,19 @@ class MultipleImageFragment: BaseFragment(),
 
     private var permissionUtils: PermissionUtils? = null
     private fun initPermissionCheckOne() {
+        //begin mantis id 26741 Storage permission updation Suman 22-08-2023
+        var permissionList = arrayOf<String>( Manifest.permission.CAMERA)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            permissionList += Manifest.permission.READ_MEDIA_IMAGES
+            permissionList += Manifest.permission.READ_MEDIA_AUDIO
+            permissionList += Manifest.permission.READ_MEDIA_VIDEO
+        }else{
+            permissionList += Manifest.permission.WRITE_EXTERNAL_STORAGE
+            permissionList += Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+//end mantis id 26741 Storage permission updation Suman 22-08-2023
+
         permissionUtils = PermissionUtils(mContext as Activity, object : PermissionUtils.OnPermissionListener {
             override fun onPermissionGranted() {
                 showPictureDialog()
@@ -401,10 +406,24 @@ class MultipleImageFragment: BaseFragment(),
                 (mContext as DashboardActivity).showSnackMessage(getString(R.string.accept_permission))
             }
 
-        }, arrayOf<String>(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+        },permissionList)// arrayOf<String>(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
     }
 
     private fun initPermissionCheck() {
+
+        //begin mantis id 26741 Storage permission updation Suman 22-08-2023
+        var permissionList = arrayOf<String>( Manifest.permission.CAMERA)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            permissionList += Manifest.permission.READ_MEDIA_IMAGES
+            permissionList += Manifest.permission.READ_MEDIA_AUDIO
+            permissionList += Manifest.permission.READ_MEDIA_VIDEO
+        }else{
+            permissionList += Manifest.permission.WRITE_EXTERNAL_STORAGE
+            permissionList += Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+//end mantis id 26741 Storage permission updation Suman 22-08-2023
+
         permissionUtils = PermissionUtils(mContext as Activity, object : PermissionUtils.OnPermissionListener {
             override fun onPermissionGranted() {
 //                showPictureDialog()
@@ -414,7 +433,7 @@ class MultipleImageFragment: BaseFragment(),
                 (mContext as DashboardActivity).showSnackMessage(getString(R.string.accept_permission))
             }
 
-        }, arrayOf<String>(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+        },permissionList)// arrayOf<String>(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
     }
 
     fun showPictureDialog() {
@@ -435,7 +454,6 @@ class MultipleImageFragment: BaseFragment(),
         }
         pictureDialog.show()
     }
-
     fun onRequestPermission(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         permissionUtils?.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }

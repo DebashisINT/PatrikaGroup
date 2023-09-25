@@ -60,4 +60,7 @@ interface UserAttendanceDataDao {
 
     @Query("SELECT  COUNT(*) as attendance_count FROM "+ AppConstant.ATTENDANCE_TABLE +" WHERE logindate BETWEEN :startdate AND :enddate AND Isonleave =:Isonleave GROUP BY Isonleave")
     fun getAttendanceCountPresentwise(startdate: String,enddate:String,Isonleave:Boolean): String
+
+    @Query("SELECT MAX(logindate) FROM  attendance")
+    fun getLastLoginDate():String
 }

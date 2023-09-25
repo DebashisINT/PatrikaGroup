@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.InputFilter
 import androidx.annotation.RequiresApi
 import com.google.android.material.textfield.TextInputLayout
 import androidx.fragment.app.DialogFragment
@@ -41,6 +42,7 @@ import com.patrikagroup.app.utils.FTStorageUtils
 import com.patrikagroup.app.utils.PermissionUtils
 import com.patrikagroup.app.utils.Toaster
 import com.patrikagroup.base.presentation.BaseActivity
+import com.patrikagroup.features.DecimalDigitsInputFilter
 import com.patrikagroup.features.dashboard.presentation.DashboardActivity
 import com.patrikagroup.features.newcollection.model.PaymentModeResponseModel
 import com.patrikagroup.features.newcollection.newcollectionlistapi.NewCollectionListRepoProvider
@@ -64,6 +66,8 @@ import java.util.*
 /**
  * Created by Saikat on 26-10-2018.
  */
+// Rev 1.0 AddCollectionDialog Suman 04/05/2023 Decimal place for amount  mantis id - 26030
+
 class AddCollectionDialog : DialogFragment(), View.OnClickListener {
 
     private lateinit var mContext: Context
@@ -176,6 +180,9 @@ class AddCollectionDialog : DialogFragment(), View.OnClickListener {
 
     private fun initView(v: View?) {
         et_collection = v?.findViewById(R.id.et_collection)!!
+        //Begin Rev 1.0 AddCollectionDialog Suman 04/05/2023 Decimal place for amount  mantis id - 26030
+        et_collection.filters=(arrayOf<InputFilter>(DecimalDigitsInputFilter(10, 2)))
+        //End of Rev 1.0 AddCollectionDialog Suman 04/05/2023 Decimal place for amount  mantis id - 26030
         shop_name_TV = v.findViewById(R.id.shop_name_TV)
         iv_close_icon = v.findViewById(R.id.iv_close_icon)
         add_TV = v.findViewById(R.id.add_TV)
@@ -677,6 +684,20 @@ class AddCollectionDialog : DialogFragment(), View.OnClickListener {
     }
 
     private fun initPermissionCheck() {
+
+        //begin mantis id 26741 Storage permission updation Suman 22-08-2023
+        var permissionList = arrayOf<String>( Manifest.permission.CAMERA)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            permissionList += Manifest.permission.READ_MEDIA_IMAGES
+            permissionList += Manifest.permission.READ_MEDIA_AUDIO
+            permissionList += Manifest.permission.READ_MEDIA_VIDEO
+        }else{
+            permissionList += Manifest.permission.WRITE_EXTERNAL_STORAGE
+            permissionList += Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+//end mantis id 26741 Storage permission updation Suman 22-08-2023
+
         permissionUtils = PermissionUtils(mContext as Activity, object : PermissionUtils.OnPermissionListener {
             override fun onPermissionGranted() {
                 showPictureDialog()
@@ -686,7 +707,7 @@ class AddCollectionDialog : DialogFragment(), View.OnClickListener {
                 (mContext as DashboardActivity).showSnackMessage(getString(R.string.accept_permission))
             }
 
-        }, arrayOf<String>(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+        },permissionList)// arrayOf<String>(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
     }
 
     fun onRequestPermission(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {

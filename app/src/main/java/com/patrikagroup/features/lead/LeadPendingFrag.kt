@@ -38,6 +38,7 @@ import com.patrikagroup.features.lead.dialog.EnqListDialog
 import com.patrikagroup.features.lead.model.CustomerLeadList
 import com.patrikagroup.features.lead.model.CustomerLeadResponse
 import com.patrikagroup.features.lead.model.CustomerListReq
+import com.patrikagroup.features.performanceAPP.model.ChartDataModelNew.Companion.now
 import com.patrikagroup.widgets.AppCustomEditText
 import com.patrikagroup.widgets.AppCustomTextView
 import com.pnikosis.materialishprogress.ProgressWheel
@@ -160,6 +161,13 @@ class LeadPendingFrag : BaseFragment(), DatePickerDialog.OnDateSetListener, View
         enquiryTypeSelectSpinner.setOnClickListener(this)
         showButton.setOnClickListener(this)
 
+        if(!CustomStatic.lead_msgBody.equals("")){
+            fromDate = CustomStatic.lead_msgLeadDate
+            toDate = AppUtils.getCurrentDateForShopActi()// CustomStatic.lead_msgLeadDate
+            enquiryTypeSelectSpinner.text = CustomStatic.lead_msgLeadEnquiry
+            CustomStatic.lead_msgBody=""
+            getLeadFetch()
+        }
 
     }
 
@@ -186,7 +194,6 @@ class LeadPendingFrag : BaseFragment(), DatePickerDialog.OnDateSetListener, View
     @SuppressLint("NewApi")
     override fun onClick(v: View?) {
         when (v?.id) {
-
             R.id.frag_lead_pending_date_range -> {
                 if (!isChkChanged) {
                     date_range.isChecked = true

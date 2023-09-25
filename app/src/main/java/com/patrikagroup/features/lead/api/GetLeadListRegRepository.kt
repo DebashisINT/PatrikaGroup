@@ -3,6 +3,10 @@ package com.patrikagroup.features.lead.api
 import com.patrikagroup.base.BaseResponse
 import com.patrikagroup.features.NewQuotation.model.AddQuotRequestData
 import com.patrikagroup.features.lead.model.*
+import com.patrikagroup.features.taskManagement.AddTaskReq
+import com.patrikagroup.features.taskManagement.EditTaskReq
+import com.patrikagroup.features.taskManagement.TaskViewRes
+import com.patrikagroup.features.taskManagement.model.TaskListReq
 import io.reactivex.Observable
 
 class GetLeadListRegRepository(val apiService : GetLeadListApi) {
@@ -21,6 +25,22 @@ class GetLeadListRegRepository(val apiService : GetLeadListApi) {
 
     fun getActivityList(crm_id: String): Observable<ActivityViewRes> {
         return apiService.viewActivityList(crm_id)
+    }
+
+    fun TaskList(list: TaskListReq): Observable<TaskResponse> {
+        return apiService.getTaskList(list)
+    }
+
+    fun submitTask(list: AddTaskReq): Observable<BaseResponse> {
+        return apiService.submitTaskListAPI(list)
+    }
+
+    fun getTaskList(task_id: String): Observable<TaskViewRes> {
+        return apiService.viewTaskList(task_id)
+    }
+
+    fun editTask(obj: EditTaskReq): Observable<BaseResponse> {
+        return apiService.editTaskAPI(obj)
     }
 
 }

@@ -22,6 +22,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.patrikagroup.MySingleton
 import com.github.jhonnyx2012.horizontalpicker.DatePickerListener
 import com.github.jhonnyx2012.horizontalpicker.HorizontalPicker
 import com.google.gson.Gson
@@ -62,6 +66,7 @@ import com.patrikagroup.features.login.presentation.LoginActivity
 import com.patrikagroup.features.returnsOrder.ViewAllReturnListFragment
 import com.patrikagroup.features.viewAllOrder.interf.QaOnCLick
 import com.patrikagroup.widgets.AppCustomTextView
+import com.google.gson.JsonParser
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.jetbrains.anko.doAsync
@@ -428,6 +433,8 @@ class AverageShopFragment : BaseFragment(), DatePickerListener, View.OnClickList
             shopDurationData.multi_contact_name = shopActivity.multi_contact_name
             shopDurationData.multi_contact_number = shopActivity.multi_contact_number
 
+            shopDurationData.distFromProfileAddrKms = shopActivity.distFromProfileAddrKms
+            shopDurationData.stationCode = shopActivity.stationCode
 
             shopDataList.add(shopDurationData)
 
@@ -912,6 +919,11 @@ class AverageShopFragment : BaseFragment(), DatePickerListener, View.OnClickList
             shopDurationData.multi_contact_name = shopActivity.multi_contact_name
             shopDurationData.multi_contact_number = shopActivity.multi_contact_number
 
+            //Begin Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+            shopDurationData.distFromProfileAddrKms = shopActivity.distFromProfileAddrKms
+            shopDurationData.stationCode = shopActivity.stationCode
+            //End of Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+
             shopDataList.add(shopDurationData)
 
             if (shopDataList.isEmpty()) {
@@ -1216,7 +1228,7 @@ class AverageShopFragment : BaseFragment(), DatePickerListener, View.OnClickList
 
     @SuppressLint("WrongConstant")
     private fun initAdapter() {
-        averageShopListAdapter = AverageShopListAdapter(mContext, ShopActivityEntityList, object : AverageShopListClickListener {
+        averageShopListAdapter = AverageShopListAdapter(mContext, ShopActivityEntityList,selectedDate, object : AverageShopListClickListener {
             override fun onSyncClick(position: Int) {
 
                 val shop = AppDatabase.getDBInstance()!!.addShopEntryDao().getShopDetail(ShopActivityEntityList[position].shopid)
@@ -1269,7 +1281,12 @@ class AverageShopFragment : BaseFragment(), DatePickerListener, View.OnClickList
 
                 }
                 else{
-                    (this as DashboardActivity).showSnackMessage(getString(R.string.no_internet))
+                    try{
+                        Toaster.msgShort(mContext,getString(R.string.no_internet))
+                        //(this as DashboardActivity).showSnackMessage(getString(R.string.no_internet))
+                    }catch (ex:Exception){
+                        ex.printStackTrace()
+                    }
                 }
 
             }
@@ -1286,10 +1303,106 @@ class AverageShopFragment : BaseFragment(), DatePickerListener, View.OnClickList
                 initiatePopupWindow(view, position)
             }
 
+            override fun onWhatsApiClick(shop_id: String) {
+                var shopWiseWhatsObj = AppDatabase.getDBInstance()?.visitRevisitWhatsappStatusDao()!!.getByShopIDDate(shop_id,AppUtils.getCurrentDateForShopActi())
+                var shopObj: AddShopDBModelEntity = AppDatabase.getDBInstance()!!.addShopEntryDao().getShopByIdN(shop_id)
+                if(AppUtils.isOnline(mContext)){
+                    whatsappApi(shopWiseWhatsObj!!,shopObj,shopWiseWhatsObj.isNewShop)
+                }else{
+                    Toaster.msgShort(mContext, "Your network connection is offine. Make it online to proceed.")
+                }
+
+            }
         })
         layoutManager = LinearLayoutManager(mContext, LinearLayout.VERTICAL, false)
         shopList.layoutManager = layoutManager
         shopList.adapter = averageShopListAdapter
+    }
+
+    private fun whatsappApi(obj : VisitRevisitWhatsappStatus,shopObj: AddShopDBModelEntity,isNewShop:Boolean){
+        try{
+            var msgBody = ""
+            var templateName = ""
+            if(isNewShop){
+                msgBody= "Hey there! \n" +
+                        "\n" +
+                        "Thanks for connecting with (${Pref.user_name} - ${Pref.UserLoginContactID})\n" +
+                        "\n" +
+                        "We're thrilled to have you on board! Explore our website to discover a world of stunning ACP designs with unbeatable quality, and unmatched performance. Let's create something extraordinary together!\n" +
+                        "https://www.eurobondacp.com/download-catalogues\n\n" +
+                        "\n" +
+                        "*Team Eurobond*\n"
+                templateName = "incoming_call_response"
+            }else {
+                msgBody= "Hey there!\n" +
+                        "Hope you had a successful meeting with (${Pref.user_name} - ${Pref.UserLoginContactID})\n" +
+                        "We’ll be happy to assist you further with any inquiries or support you may require.\n" +
+                        "*Team Eurobond*\n"
+                templateName = "incoming_call_response_2"
+            }
+
+
+                val stringRequest: StringRequest = object : StringRequest(
+                    Request.Method.POST, "https://theultimate.io/WAApi/send",
+                    Response.Listener<String?> { response ->
+
+                        var resp = JsonParser.parseString(response)
+                        var statusCode = resp.asJsonObject.get("statusCode").toString().drop(1).dropLast(1)
+                        var statusMsg = resp.asJsonObject.get("reason").toString().drop(1).dropLast(1)
+                        var transId = resp.asJsonObject.get("transactionId").toString().drop(1).dropLast(1)
+                        if(transId == null){
+                            transId = ""
+                        }
+
+                        if(statusCode.equals("200",ignoreCase = true) && statusMsg.equals("success",ignoreCase = true)){
+                            AppDatabase.getDBInstance()?.visitRevisitWhatsappStatusDao()!!.updateWhatsStatus(true,"Sent Successfully",obj.sl_no,transId)
+                        }else{
+                            AppDatabase.getDBInstance()?.visitRevisitWhatsappStatusDao()!!.updateWhatsStatus(false,statusMsg.toString(),obj.sl_no,transId)
+                        }
+
+                        val simpleDialog = Dialog(mContext)
+                        simpleDialog.setCancelable(false)
+                        simpleDialog.getWindow()!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                        simpleDialog.setContentView(R.layout.dialog_ok)
+                        val dialogHeader = simpleDialog.findViewById(R.id.dialog_yes_header_TV) as AppCustomTextView
+                        dialogHeader.text = "Sent succesfully."
+                        val dialogYes = simpleDialog.findViewById(R.id.tv_dialog_yes) as AppCustomTextView
+                        dialogYes.setOnClickListener({ view ->
+                            simpleDialog.cancel()
+                            initShopList()
+                        })
+                        simpleDialog.show()
+
+                    },
+                    Response.ErrorListener { error ->
+                        var e = error.toString()
+                    })
+                {
+                    override fun getParams(): Map<String, String>? {
+                        val params: MutableMap<String, String> = HashMap()
+                        params.put("userid", "eurobondwa")
+                        params.put("msg", msgBody)
+                        params.put("wabaNumber", "917888488891")
+                        params.put("output", "json")
+                        //params.put("mobile", "918017845376")
+                        params.put("mobile", "91${obj.contactNo}")
+                        params.put("sendMethod", "quick")
+                        params.put("msgType", "text")
+                        params.put("templateName", templateName)
+                        return params
+                    }
+                    override fun getHeaders(): MutableMap<String, String> {
+                        val params: MutableMap<String, String> = HashMap()
+                        params["apikey"] = "36328e9735f7012988e6ed58f9fffaec4c7a79eb"
+                        return params
+                    }
+                }
+                MySingleton.getInstance(mContext.applicationContext)!!.addToRequestQueue(stringRequest)
+            }
+        catch (ex:Exception){
+                ex.printStackTrace()
+            }
+
     }
 
     private fun syncShop(position: Int, shop: AddShopDBModelEntity) {
@@ -1804,6 +1917,11 @@ class AverageShopFragment : BaseFragment(), DatePickerListener, View.OnClickList
                     shopDurationData.multi_contact_name = shopActivity.multi_contact_name
                     shopDurationData.multi_contact_number = shopActivity.multi_contact_number
 
+                    //Begin Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+                    shopDurationData.distFromProfileAddrKms = shopActivity.distFromProfileAddrKms
+                    shopDurationData.stationCode = shopActivity.stationCode
+                    //End of Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+
                     shopDataList.add(shopDurationData)
                 }
             }
@@ -2232,6 +2350,12 @@ class AverageShopFragment : BaseFragment(), DatePickerListener, View.OnClickList
         // 1.0 AverageShopFragment AppV 4.0.6  multiple contact Data added on Api called
         shopDurationData.multi_contact_name = shopActivity.multi_contact_name
         shopDurationData.multi_contact_number = shopActivity.multi_contact_number
+
+        //Begin Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+        shopDurationData.distFromProfileAddrKms = shopActivity.distFromProfileAddrKms
+        shopDurationData.stationCode = shopActivity.stationCode
+        //End of Rev 17 DashboardActivity AppV 4.0.8 Suman    24/04/2023 distanct+station calculation 25806
+
         shopDataList.add(shopDurationData)
 
         if (shopDataList.isEmpty()) {

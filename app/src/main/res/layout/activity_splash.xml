@@ -18,6 +18,7 @@
         android:id="@+id/Logo_name_TV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:layout_below="@+id/logo_new"
         android:layout_centerHorizontal="true"
         android:layout_gravity="center"
@@ -25,7 +26,6 @@
         android:gravity="center|center_horizontal"
         android:text="@string/name_filed_managenent_system"
         android:textColor="#287fb2"
-        android:visibility="gone"
         android:textSize="@dimen/_12sdp"
         android:textStyle="bold" />
 

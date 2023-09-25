@@ -73,6 +73,7 @@ import java.util.*
  */
 // Revision History
 // 1.0 EditReimbursementFragment AppV 4.0.7 Saheli    03/03/2023 Timber Log Implementation
+// 2.0 EditReimbursementFragment AppV 4.1.3 Suman    03/03/2023 mantis id 25979
 class EditReimbursementFragment : BaseFragment(), DateAdapter.onPetSelectedListener, View.OnClickListener, TabLayout.OnTabSelectedListener, RadioGroup.OnCheckedChangeListener {
 
     private val visittypeArrayList: ArrayList<ReimbursementConfigVisitTypeDataModel> = ArrayList()
@@ -211,6 +212,10 @@ class EditReimbursementFragment : BaseFragment(), DateAdapter.onPetSelectedListe
     private var isAttachmentMandatoryForLocal = false
     private var isAttachmentMandatoryForOutstation = false
 
+    private lateinit var ll_frag_reimb_img_name_root:LinearLayout
+    private lateinit var tv_frag_reimb_img_name_1:TextView
+    private lateinit var tv_frag_reimb_img_name_2:TextView
+
     companion object {
         private var reimbursementItem: ReimbursementListDataModel? = null
 
@@ -257,6 +262,19 @@ class EditReimbursementFragment : BaseFragment(), DateAdapter.onPetSelectedListe
     }
 
     private fun initView(view: View) {
+        //Begin Rev 2.0 ReimbursementFragment AppV 4.0.8 Suman    02/05/2023 mantis id 25979
+        ll_frag_reimb_img_name_root = view.findViewById(R.id.ll_frag_reimb_img_name_root)
+        tv_frag_reimb_img_name_1 = view.findViewById(R.id.tv_frag_reimb_img_name_1)
+        tv_frag_reimb_img_name_2 = view.findViewById(R.id.tv_frag_reimb_img_name_2)
+        tv_frag_reimb_img_name_1.text = Pref.NameforConveyanceAttachment1
+        tv_frag_reimb_img_name_2.text = Pref.NameforConveyanceAttachment2
+        if(Pref.NameforConveyanceAttachment1.equals("") && Pref.NameforConveyanceAttachment2.equals("")){
+            ll_frag_reimb_img_name_root.visibility = View.GONE
+        }else{
+            ll_frag_reimb_img_name_root.visibility = View.VISIBLE
+        }
+        //End of Rev 2.0 ReimbursementFragment AppV 4.0.8 Suman    02/05/2023 mantis id 25979
+
         maximum_amount_allowance_Per_Km_TV = view.findViewById(R.id.maximum_amount_allowance_Per_Km_TV)
         maximum_amount_allowance_Km_TV = view.findViewById(R.id.maximum_amount_allowance_Km_TV)
         km_travelled_TV = view.findViewById(R.id.km_travelled_TV)
@@ -624,6 +642,12 @@ class EditReimbursementFragment : BaseFragment(), DateAdapter.onPetSelectedListe
                 /*tv_upload_ticket.visibility = View.VISIBLE
                 tv_upload_ticket.text = "Ticket/Bills Image"*/
 
+                if(reimbursementItem?.expense_type.equals("Conveyance")){
+                    ll_frag_reimb_img_name_root.visibility = View.VISIBLE
+                }else{
+                    ll_frag_reimb_img_name_root.visibility = View.GONE
+                }
+
                 Glide.with(mContext)
                         .load(reimbursementDetails?.image_list?.get(0)?.links)
                         .apply(RequestOptions.placeholderOf(R.drawable.ic_upload_icon).error(R.drawable.ic_upload_icon))
@@ -632,6 +656,16 @@ class EditReimbursementFragment : BaseFragment(), DateAdapter.onPetSelectedListe
                 rl_image_1.visibility = View.VISIBLE
                 imagePath_1 = reimbursementDetails?.image_list?.get(0)?.links!!
 
+                tv_frag_reimb_img_name_1.visibility = View.VISIBLE
+            
+                //Begin 2.0 EditReimbursementFragment AppV 4.1.3 Suman    03/03/2023 mantis id 25979
+                if(Pref.IsTAAttachment1Mandatory){
+                    iv_image_cross_icon_1.visibility = View.GONE
+                }else{
+                    iv_image_cross_icon_1.visibility = View.VISIBLE
+                }
+                //End of 2.0 EditReimbursementFragment AppV 4.1.3 Suman    03/03/2023 mantis id 25979
+
                 Glide.with(mContext)
                         .load(reimbursementDetails?.image_list?.get(1)?.links)
                         .apply(RequestOptions.placeholderOf(R.drawable.ic_upload_icon).error(R.drawable.ic_upload_icon))
@@ -639,6 +673,16 @@ class EditReimbursementFragment : BaseFragment(), DateAdapter.onPetSelectedListe
                 iv_image_cross_icon_2.visibility = View.VISIBLE
                 rl_image_2.visibility = View.VISIBLE
                 imagePath_2 = reimbursementDetails?.image_list?.get(1)?.links!!
+
+                tv_frag_reimb_img_name_2.visibility = View.VISIBLE
+
+                //Begin 2.0 EditReimbursementFragment AppV 4.1.3 Suman    03/03/2023 mantis id 25979
+                if(Pref.IsTAAttachment2Mandatory){
+                    iv_image_cross_icon_2.visibility = View.GONE
+                }else{
+                    iv_image_cross_icon_2.visibility = View.VISIBLE
+                }
+                //End of 2.0 EditReimbursementFragment AppV 4.1.3 Suman    03/03/2023 mantis id 25979
 
                 Glide.with(mContext)
                         .load(reimbursementDetails?.image_list?.get(2)?.links)
@@ -651,6 +695,8 @@ class EditReimbursementFragment : BaseFragment(), DateAdapter.onPetSelectedListe
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }else{
+            ll_frag_reimb_img_name_root.visibility = View.GONE
         }
 
         //setDateData("7")
@@ -1299,6 +1345,20 @@ class EditReimbursementFragment : BaseFragment(), DateAdapter.onPetSelectedListe
     }
 
     private fun initPermissionCheck(state: Int) {
+
+        //begin mantis id 26741 Storage permission updation Suman 22-08-2023
+        var permissionList = arrayOf<String>( Manifest.permission.CAMERA)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            permissionList += Manifest.permission.READ_MEDIA_IMAGES
+            permissionList += Manifest.permission.READ_MEDIA_AUDIO
+            permissionList += Manifest.permission.READ_MEDIA_VIDEO
+        }else{
+            permissionList += Manifest.permission.WRITE_EXTERNAL_STORAGE
+            permissionList += Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+//end mantis id 26741 Storage permission updation Suman 22-08-2023
+
         permissionUtils = PermissionUtils(mContext as Activity, object : PermissionUtils.OnPermissionListener {
             override fun onPermissionGranted() {
                 imageState = state
@@ -1310,7 +1370,7 @@ class EditReimbursementFragment : BaseFragment(), DateAdapter.onPetSelectedListe
                 (mContext as DashboardActivity).showSnackMessage(getString(R.string.accept_permission))
             }
 
-        }, arrayOf<String>(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+        },permissionList) //arrayOf<String>(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
     }
 
     fun onRequestPermission(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {

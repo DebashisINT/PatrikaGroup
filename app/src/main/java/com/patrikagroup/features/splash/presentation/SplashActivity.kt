@@ -27,7 +27,6 @@ import com.patrikagroup.app.Pref
 import com.patrikagroup.app.uiaction.DisplayAlert
 import com.patrikagroup.app.utils.AppUtils
 import com.patrikagroup.app.utils.FileLoggingTree
-import com.patrikagroup.app.utils.FileLoggingTree.fileDelete
 import com.patrikagroup.app.utils.PermissionUtils
 import com.patrikagroup.app.utils.Toaster
 import com.patrikagroup.base.presentation.BaseActivity
@@ -120,6 +119,7 @@ class SplashActivity : BaseActivity(), GpsStatusDetector.GpsStatusDetectorCallBa
     email.putExtra(Intent.EXTRA_TEXT, "msg")
     //email.type = "message/rfc822"
     startActivity(Intent.createChooser(email, "Send mail..."))*/
+
 
     val receiver = ComponentName(this, AlarmBootReceiver::class.java)
         packageManager.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
@@ -416,6 +416,36 @@ class SplashActivity : BaseActivity(), GpsStatusDetector.GpsStatusDetectorCallBa
             val currentVersion = Integer.parseInt(BuildConfig.VERSION_NAME.replace(".", ""))
 
             when {
+
+                storeVersion.toInt()-currentVersion.toInt() > 2 -> {
+
+                    val simpleDialogV = Dialog(this)
+                    simpleDialogV.setCancelable(false)
+                    simpleDialogV.getWindow()!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    simpleDialogV.setContentView(R.layout.dialog_message)
+                    val dialogHeaderV =
+                        simpleDialogV.findViewById(R.id.dialog_message_header_TV) as AppCustomTextView
+                    val dialog_yes_no_headerTVV =
+                        simpleDialogV.findViewById(R.id.dialog_message_headerTV) as AppCustomTextView
+                    if (Pref.user_name != null) {
+                        dialog_yes_no_headerTVV.text = "Hi " + Pref.user_name!! + "!"
+                    } else {
+                        dialog_yes_no_headerTVV.text = "Hi User" + "!"
+                    }
+                    dialogHeaderV.text = "You are using lower Version of Application. Please Uninstall this and Install Latest version from Playstore."
+
+                    val dialogYesV = simpleDialogV.findViewById(R.id.tv_message_ok) as AppCustomTextView
+                    dialogYesV.text = "Uninstall"
+                    dialogYesV.setOnClickListener({ view ->
+                        simpleDialogV.cancel()
+                        dialogYesV.text = "Please wait......"
+                        val intent = Intent(Intent.ACTION_DELETE)
+                        intent.data = Uri.parse("package:${this.getPackageName()}")
+                        startActivity(intent)
+                    })
+                    simpleDialogV.show()
+                }
+
                 currentVersion >= storeVersion -> goToNextScreen()
                 currentVersion in minVersion until storeVersion -> {
                     CommonDialog.getInstance("New Update", response.optional_msg!!,
@@ -538,6 +568,7 @@ class SplashActivity : BaseActivity(), GpsStatusDetector.GpsStatusDetectorCallBa
                 isLoginLoaded = true
 
                 // 2.0 SplashActivity AppV 4.0.7 Suman    21/03/2023 Location rectification for previous location 25760
+                println("loc_fetch_tag splash begin")
                 progress_wheel.spin()
                 try{
                     SingleShotLocationProvider.requestSingleUpdate(this,
@@ -552,26 +583,28 @@ class SplashActivity : BaseActivity(), GpsStatusDetector.GpsStatusDetectorCallBa
                             }
 
                             override fun onNewLocationAvailable(location: Location) {
+                                println("loc_fetch_tag splash end")
                                 Pref.latitude = location.latitude.toString()
                                 Pref.longitude = location.longitude.toString()
-
+                                Pref.current_latitude = location.latitude.toString()
+                                Pref.current_longitude = location.longitude.toString()
+                                Timber.d("Splash onNewLocationAvailable ${Pref.latitude} ${Pref.longitude}")
                                 progress_wheel.stopSpinning()
-
-                                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
-                                overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-                                finish()
                             }
                         })
                 }
                 catch (ex:Exception){
                     ex.printStackTrace()
+                    Timber.d("Splash onNewLocationAvailable ex ${ex.message}")
                     progress_wheel.stopSpinning()
+                }
+
+                Handler().postDelayed(Runnable {
                     startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
                     overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
                     finish()
-                }
+                }, 2200)
             }
-
         } else {
             startActivity(Intent(this@SplashActivity, DashboardActivity::class.java))
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
