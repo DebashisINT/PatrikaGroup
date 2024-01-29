@@ -382,10 +382,9 @@ class DashboardActivity : BaseActivity(), View.OnClickListener, BaseNavigation, 
             //println("fcm_token " + token.toString());
             Timber.d("token : " + token.toString())
         })
-        println("load_frag " + mFragType.toString() + "     " + Pref.user_id.toString() + " "+Pref.profile_state );
-
+        println("load_frag " + mFragType.toString() + "     " + Pref.user_id.toString() + " "+Pref.IsFeedbackAvailableInShop );
+        //Pref.IsUsbDebuggingRestricted = false
         //val distance = LocationWizard.getDistance(22.4339117,	87.3366233, 22.52156	,87.3279733)
-        //Pref.isExpenseFeatureAvailable = false
         Timber.d("dash_frag ${AppUtils.getCurrentDateTime()} ${Pref.user_name} ${Pref.profile_state}")
         if (addToStack) {
             mTransaction.add(R.id.frame_layout_container, getFragInstance(mFragType, initializeObject, true)!!, mFragType.toString())

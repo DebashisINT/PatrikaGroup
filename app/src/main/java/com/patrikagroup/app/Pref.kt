@@ -712,7 +712,7 @@ object Pref : PreferenceHolder() {
     var IsAllowBreakageTracking: Boolean by bindToPreferenceField(false, "IsAllowBreakageTracking")
     var IsAllowBreakageTrackingunderTeam: Boolean by bindToPreferenceField(
         false,
-        "IsFeedbackAvailableInShop"
+        "IsAllowBreakageTrackingunderTeam"
     )
 
     var IsRateEnabledforNewOrderScreenwithSize: Boolean by bindToPreferenceField(
